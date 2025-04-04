@@ -55,6 +55,34 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
         backgroundColor: '#eeeeee',
     },
 }));
+// Define mapping for carton IDs to auto-generated USNs
+const cartonToAutoUSNMap = {
+    'MOB-88846203250762-47': [
+        'SM-G998U-RT3K6L9',
+        'SM-G998U-XJ9P43',
+        'SM-G998U-L7MN54',
+        'SM-G998U-P9K7J2',
+        'SM-G998U-TW23K9'
+    ],
+    'MOB-65437812903458-21': [
+        'A2894-7HJK98',
+        'A2894-L8HD42',
+        'A2894-9KFD23',
+        'A2894-5TYU89'
+    ],
+    'MOB-92315687423910-36': [
+        'GP9X-QW34ER',
+        'GP9X-AS56DF',
+        'GP9X-ZX89CV',
+        'GP9X-BG67HJ'
+    ],
+    'MOB-10293847561234-42': [
+        'SM-G998U-1QAZ2W',
+        'SM-G998U-3EDC4R',
+        'SM-G998U-5TGB6Y',
+        'SM-G998U-7UJM8I'
+    ]
+};
 
 // Sample data for mobile device defects
 const generateMobileDefectData = () => {
@@ -64,43 +92,51 @@ const generateMobileDefectData = () => {
     const mobileDefectData = [];
 
     // First date with multiple units including one defect (as shown in image)
+    const firstCartonId = 'MOB-88846203250762-47';
+    const firstAutoUSNs = cartonToAutoUSNMap[firstCartonId];
+
     mobileDefectData.push(
         {
             date: '04/03/2025',
             line: 'L1',
             shift: 'A Shift',
             project: 'Galaxy S25',
-            stage: 'QIT',
-            cartonId: 'MOB-88846203250762-47',
-            usn: 'SM-G998U-RT3K6L9',
+            cartonId: firstCartonId,
+            autoUSN: firstAutoUSNs[0],
+            manualUSN: firstAutoUSNs[0], // Matching for first record
             symptoms: 'Display Dead Pixel',
             errCode: 'DP001',
             spec: '0 pixels',
             defectPic: Picture1,
             actual: '3 pixels',
-            status: 'NG'
+            status: 'NG',
+            usnMatch: true // USNs match
         }
     );
 
-    const usnList = ['SM-G998U-XJ9P43', 'SM-G998U-L7MN54', 'SM-G998U-P9K7J2', 'SM-G998U-TW23K9'];
+    // Add more records for the first carton
+    for (let i = 1; i < firstAutoUSNs.length; i++) {
+        const autoUSN = firstAutoUSNs[i];
+        // For demo, let's make some manual USNs not match
+        const manualUSN = i === 2 ? 'SM-G998U-MISTYPED' : autoUSN;
 
-    usnList.forEach(usn => {
         mobileDefectData.push({
             date: '04/03/2025',
             line: 'L1',
             shift: 'A Shift',
             project: 'Galaxy S25',
-            stage: 'QIT',
-            cartonId: 'MOB-88846203250762-47',
-            usn: usn,
+            cartonId: firstCartonId,
+            autoUSN: autoUSN,
+            manualUSN: manualUSN,
             symptoms: '-',
             errCode: '-',
             spec: '-',
             defectPic: '',
             actual: '-',
-            status: 'OK'
+            status: 'OK',
+            usnMatch: autoUSN === manualUSN
         });
-    });
+    }
 
     // Mobile device project names
     const mobileProjects = ['Galaxy S25', 'iPhone 16', 'Pixel 9'];
@@ -139,10 +175,12 @@ const generateMobileDefectData = () => {
         }
     ];
 
-    // Add data for other dates
+    // Add data for other dates and cartons
     for (let i = 1; i < dates.length; i++) {
         // Each date has 5-7 records
-        const recordCount = Math.floor(Math.random() * 3) + 5;
+        const cartonKeys = Object.keys(cartonToAutoUSNMap);
+        const selectedCartonId = cartonKeys[Math.floor(Math.random() * cartonKeys.length)];
+        const autoUSNs = cartonToAutoUSNMap[selectedCartonId];
 
         // Generate model prefix based on project
         const getModelPrefix = (project) => {
@@ -151,26 +189,30 @@ const generateMobileDefectData = () => {
             return 'GP9X';  // Pixel 9
         };
 
+        const project = mobileProjects[Math.floor(Math.random() * mobileProjects.length)];
+        const recordCount = Math.min(autoUSNs.length, Math.floor(Math.random() * 3) + 3);
+
         for (let j = 0; j < recordCount; j++) {
             const hasDefect = Math.random() < 0.2; // 20% chance of having a defect
-            const project = mobileProjects[Math.floor(Math.random() * mobileProjects.length)];
-            const modelPrefix = getModelPrefix(project);
             const defect = mobileDefects[Math.floor(Math.random() * mobileDefects.length)];
+            const autoUSN = autoUSNs[j];
+            const manualUSN = Math.random() < 0.8 ? autoUSN : `${getModelPrefix(project)}-TYPO${Math.floor(Math.random() * 1000)}`;
 
             mobileDefectData.push({
                 date: dates[i],
                 line: `L${Math.floor(Math.random() * 3) + 1}`,
                 shift: ['A Shift', 'B Shift', 'C Shift'][Math.floor(Math.random() * 3)],
                 project: project,
-                stage: ['QIT', 'FCT', 'PACK'][Math.floor(Math.random() * 3)],
-                cartonId: `MOB-${Math.floor(Math.random() * 90000) + 10000}${Math.floor(Math.random() * 10000)}-${Math.floor(Math.random() * 100)}`,
-                usn: `${modelPrefix}-${Array.from({ length: 6 }, () => '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 35)]).join('')}`,
+                cartonId: selectedCartonId,
+                autoUSN: autoUSN,
+                manualUSN: manualUSN,
                 symptoms: hasDefect ? defect.symptom : '-',
                 errCode: hasDefect ? defect.errCode : '-',
                 spec: hasDefect ? defect.spec : '-',
                 defectPic: hasDefect ? Picture1 : '',
                 actual: hasDefect ? defect.actual() : '-',
-                status: hasDefect ? 'NG' : 'OK'
+                status: hasDefect ? 'NG' : 'OK',
+                usnMatch: autoUSN === manualUSN
             });
         }
     }
@@ -180,10 +222,16 @@ const generateMobileDefectData = () => {
 
 // Defect analysis function - simulates the automated process
 // This would normally be a backend call to analyze the image
-const analyzeDefect = (imageFile, project) => {
+const analyzeDefect = (imageFile, project, cartonId, manualUSN) => {
     return new Promise((resolve) => {
         // Simulate processing delay
         setTimeout(() => {
+            // Get auto USN for the carton
+            const autoUSNs = cartonToAutoUSNMap[cartonId] || [];
+            // If the manual USN matches one of the auto USNs for this carton
+            const autoUSN = autoUSNs.find(usn => usn === manualUSN) || (autoUSNs.length > 0 ? autoUSNs[0] : '');
+            const usnMatch = autoUSN === manualUSN;
+
             // Random chance to detect defect (70% for demo purposes)
             const isDefect = Math.random() < 0.7;
 
@@ -229,21 +277,25 @@ const analyzeDefect = (imageFile, project) => {
                 const defectImageUrl = URL.createObjectURL(imageFile);
 
                 resolve({
+                    autoUSN: autoUSN,
                     symptoms: defect.symptom,
                     errCode: defect.errCode,
                     spec: defect.spec,
                     actual: defect.actual,
                     defectPic: defectImageUrl,
-                    status: 'NG'
+                    status: 'NG',
+                    usnMatch: usnMatch
                 });
             } else {
                 resolve({
+                    autoUSN: autoUSN,
                     symptoms: '-',
                     errCode: '-',
                     spec: '-',
                     actual: '-',
                     defectPic: '',
-                    status: 'OK'
+                    status: 'OK',
+                    usnMatch: usnMatch
                 });
             }
         }, 1500); // Simulate 1.5s processing time
@@ -267,9 +319,8 @@ const DefectTrackingTable = () => {
         line: '',
         shift: '',
         project: '',
-        stage: '',
         cartonId: '',
-        usn: '',
+        manualUSN: '',
     });
     const [analysisResults, setAnalysisResults] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -277,12 +328,13 @@ const DefectTrackingTable = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const [availableAutoUSNs, setAvailableAutoUSNs] = useState([]);
 
     const fileInputRef = useRef(null);
 
     // Create a composite key for grouping based on multiple fields
     const groupedData = _.groupBy(data, item =>
-        `${item.date}|${item.line}|${item.shift}|${item.project}|${item.stage}|${item.cartonId}`
+        `${item.date}|${item.line}|${item.shift}|${item.project}|${item.cartonId}`
     );
 
     // Get the group keys and sort them by date primarily
@@ -298,13 +350,13 @@ const DefectTrackingTable = () => {
             line: '',
             shift: '',
             project: '',
-            stage: '',
             cartonId: '',
-            usn: '',
+            manualUSN: '',
         });
         setAnalysisResults(null);
         setSelectedFile(null);
         setIsProcessing(false);
+        setAvailableAutoUSNs([]);
     };
 
     const handleCloseDialog = () => {
@@ -313,6 +365,13 @@ const DefectTrackingTable = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'cartonId') {
+            // Update auto USNs when carton ID changes
+            const autoUSNs = cartonToAutoUSNMap[value] || [];
+            setAvailableAutoUSNs(autoUSNs);
+        }
+
         setFormData({
             ...formData,
             [name]: value
@@ -334,10 +393,22 @@ const DefectTrackingTable = () => {
             return;
         }
 
+        if (!formData.cartonId || !formData.manualUSN) {
+            setSnackbarMessage('Please provide Carton ID and Manual USN');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
         setIsProcessing(true);
 
         try {
-            const results = await analyzeDefect(selectedFile, formData.project);
+            const results = await analyzeDefect(
+                selectedFile,
+                formData.project,
+                formData.cartonId,
+                formData.manualUSN
+            );
             setAnalysisResults(results);
         } catch (error) {
             console.error('Error analyzing defect:', error);
@@ -352,7 +423,7 @@ const DefectTrackingTable = () => {
     const handleSubmit = () => {
         // Validate required fields
         if (!formData.line || !formData.shift || !formData.project ||
-            !formData.stage || !formData.cartonId || !formData.usn) {
+            !formData.cartonId || !formData.manualUSN) {
             setSnackbarMessage('Please fill in all required fields');
             setSnackbarSeverity('error');
             setOpenSnackbar(true);
@@ -421,9 +492,9 @@ const DefectTrackingTable = () => {
                                 <StyledTableCell>Line</StyledTableCell>
                                 <StyledTableCell>Shift</StyledTableCell>
                                 <StyledTableCell>Project</StyledTableCell>
-                                <StyledTableCell>Stage</StyledTableCell>
                                 <StyledTableCell>Carton ID</StyledTableCell>
-                                <StyledTableCell>USN</StyledTableCell>
+                                <StyledTableCell>Auto USN</StyledTableCell>
+                                <StyledTableCell>Manual USN</StyledTableCell>
                                 <StyledTableCell>Symptoms</StyledTableCell>
                                 <StyledTableCell>ERR Code</StyledTableCell>
                                 <StyledTableCell>Spec</StyledTableCell>
@@ -435,19 +506,27 @@ const DefectTrackingTable = () => {
                         <TableBody>
                             {groupKeys.map(groupKey => {
                                 const rows = groupedData[groupKey];
-                                const [date, line, shift, project, stage, cartonId] = groupKey.split('|');
+                                const [date, line, shift, project, cartonId] = groupKey.split('|');
 
                                 return (
                                     <React.Fragment key={groupKey}>
                                         {rows.map((row, index) => (
-                                            <StyledTableRow key={`${groupKey}-${row.usn}-${index}`}>
+                                            <StyledTableRow key={`${groupKey}-${row.autoUSN}-${index}`}>
                                                 {index === 0 && <GroupCell rowSpan={rows.length}>{date}</GroupCell>}
                                                 {index === 0 && <GroupCell rowSpan={rows.length}>{line}</GroupCell>}
                                                 {index === 0 && <GroupCell rowSpan={rows.length}>{shift}</GroupCell>}
                                                 {index === 0 && <GroupCell rowSpan={rows.length}>{project}</GroupCell>}
-                                                {index === 0 && <GroupCell rowSpan={rows.length}>{stage}</GroupCell>}
                                                 {index === 0 && <GroupCell rowSpan={rows.length}>{cartonId}</GroupCell>}
-                                                <TableCell>{row.usn}</TableCell>
+                                                <TableCell sx={{
+                                                    color: row.usnMatch ? 'green' : 'red',
+                                                    fontWeight: 'bold',
+                                                }}>{row.autoUSN}</TableCell>
+                                                <TableCell sx={{
+                                                    color: row.usnMatch ? 'green' : 'red',
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    {row.manualUSN}
+                                                </TableCell>
                                                 <TableCell>{row.symptoms}</TableCell>
                                                 <TableCell>{row.errCode}</TableCell>
                                                 <TableCell>{row.spec}</TableCell>
@@ -482,6 +561,8 @@ const DefectTrackingTable = () => {
                 open={openDialog}
                 onClose={handleCloseDialog}
                 aria-labelledby="form-dialog-title"
+                maxWidth="md"
+                fullWidth
             >
                 <DialogTitle>Add New Defect</DialogTitle>
                 <DialogContent>
@@ -497,6 +578,24 @@ const DefectTrackingTable = () => {
                                 margin="dense"
                             />
                         </Grid>
+
+                        <Grid item size={{ xs: 12, md: 6 }}>
+                            <FormControl fullWidth margin="dense">
+                                <InputLabel>Project *</InputLabel>
+                                <Select
+                                    name="project"
+                                    value={formData.project}
+                                    onChange={handleInputChange}
+                                    label="Project *"
+                                    required
+                                >
+                                    <MenuItem value="Galaxy S25">Galaxy S25</MenuItem>
+                                    <MenuItem value="iPhone 16">iPhone 16</MenuItem>
+                                    <MenuItem value="Pixel 9">Pixel 9</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
                         <Grid item size={{ xs: 12, md: 6 }}>
                             <FormControl fullWidth margin="dense">
                                 <InputLabel>Line *</InputLabel>
@@ -531,66 +630,41 @@ const DefectTrackingTable = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
+                        {/* Row 3: Carton ID */}
                         <Grid item size={{ xs: 12, md: 6 }}>
                             <FormControl fullWidth margin="dense">
-                                <InputLabel>Project *</InputLabel>
+                                <InputLabel>Carton ID *</InputLabel>
                                 <Select
-                                    name="project"
-                                    value={formData.project}
+                                    name="cartonId"
+                                    value={formData.cartonId}
                                     onChange={handleInputChange}
-                                    label="Project *"
+                                    label="Carton ID *"
                                     required
                                 >
-                                    <MenuItem value="Galaxy S25">Galaxy S25</MenuItem>
-                                    <MenuItem value="iPhone 16">iPhone 16</MenuItem>
-                                    <MenuItem value="Pixel 9">Pixel 9</MenuItem>
+                                    {Object.keys(cartonToAutoUSNMap).map((cartonId) => (
+                                        <MenuItem key={cartonId} value={cartonId}>{cartonId}</MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                         </Grid>
 
-                        {/* Row 3: Stage and Carton ID */}
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Stage *</InputLabel>
-                                <Select
-                                    name="stage"
-                                    value={formData.stage}
-                                    onChange={handleInputChange}
-                                    label="Stage *"
-                                    required
-                                >
-                                    <MenuItem value="QIT">QIT</MenuItem>
-                                    <MenuItem value="FCT">FCT</MenuItem>
-                                    <MenuItem value="PACK">PACK</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
+                        {/* Row 4: Manual USN */}
                         <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                                 fullWidth
-                                label="Carton ID *"
-                                name="cartonId"
-                                value={formData.cartonId}
-                                onChange={handleInputChange}
-                                variant="outlined"
-                                margin="dense"
-                                required
-                                placeholder="MOB-XXXXXXXXXX-XX"
-                            />
-                        </Grid>
-
-                        {/* Row 4: USN */}
-                        <Grid item size={{ xs: 12 }}>
-                            <TextField
-                                fullWidth
-                                label="USN *"
-                                name="usn"
-                                value={formData.usn}
+                                label="Manual USN *"
+                                name="manualUSN"
+                                value={formData.manualUSN}
                                 onChange={handleInputChange}
                                 variant="outlined"
                                 margin="dense"
                                 required
                                 placeholder="e.g. SM-G998U-XXXXXX"
+                                helperText={
+                                    availableAutoUSNs.length > 0
+                                        ? `Available Auto USNs for this carton: ${availableAutoUSNs.join(', ')}`
+                                        : ''
+                                }
                             />
                         </Grid>
 
@@ -623,7 +697,7 @@ const DefectTrackingTable = () => {
                                     <Button
                                         variant="contained"
                                         onClick={handleAnalyzeImage}
-                                        disabled={!selectedFile || isProcessing}
+                                        disabled={!selectedFile || isProcessing || !formData.cartonId || !formData.manualUSN}
                                         sx={{ ml: 'auto' }}
                                     >
                                         {isProcessing ? <CircularProgress size={24} /> : 'Analyze'}
@@ -651,6 +725,24 @@ const DefectTrackingTable = () => {
                                             >
                                                 {analysisResults.status}
                                             </Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="subtitle2">USN Match:</Typography>
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    fontWeight: 'bold',
+                                                    color: analysisResults.usnMatch ? 'green' : 'red'
+                                                }}
+                                            >
+                                                {analysisResults.usnMatch ? 'Yes' : 'No'}
+                                            </Typography>
+                                        </Grid>
+
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="subtitle2">Auto USN:</Typography>
+                                            <Typography variant="body1">{analysisResults.autoUSN}</Typography>
                                         </Grid>
 
                                         {analysisResults.status === 'NG' && (
