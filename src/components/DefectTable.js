@@ -104,7 +104,7 @@ const generateMobileDefectData = () => {
     for (let i = 1; i < cartonToAutoUSNMap.length; i++) {
         const autoUSN = cartonToAutoUSNMap[i];
         // For demo, let's make some manual USNs not match
-        const manualUSN = i === 2 || i == 4 || i == 0 ? 'SM-G998U-MISTYPED' : autoUSN;
+        const manualUSN = i === 2 || i === 4 || i === 0 ? 'SM-G998U-MISTYPED' : autoUSN;
 
         mobileDefectData.push({
             date: '04/03/2025',
