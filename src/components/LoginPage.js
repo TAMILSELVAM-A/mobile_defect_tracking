@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-const bgImage = "https://img.freepik.com/free-photo/3d-view-map_23-2150472847.jpg?t=st=1743665973~exp=1743669573~hmac=0f990831ce32e17a278db8d19c6318bc9d307d89e43f520caed1221683f404eb&w=1380"
+const bgImage = "https://img.freepik.com/free-photo/3d-view-map_23-2150472847.jpg"
 
 // Custom theme with brand colors
 const theme = createTheme({
@@ -69,7 +69,7 @@ const theme = createTheme({
     },
 });
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
