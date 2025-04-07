@@ -318,9 +318,7 @@ const DefectTrackingTable = () => {
         cartonId: '',
         usnId: '',
     });
-    const [analysisResults, setAnalysisResults] = useState(null);
     const [isProcessing, setIsProcessing] = useState({});
-    const [selectedFile, setSelectedFile] = useState(null);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -358,10 +356,10 @@ const DefectTrackingTable = () => {
         processInputValues();
     };
 
-    const doesMatch = (autoUSN, manualUSN) => {
-        if (!manualUSN || manualUSN.trim() === '') return false;
-        return autoUSN.trim() === manualUSN.trim();
-    };
+    // const doesMatch = (autoUSN, manualUSN) => {
+    //     if (!manualUSN || manualUSN.trim() === '') return false;
+    //     return autoUSN.trim() === manualUSN.trim();
+    // };
 
     const processInputValues = () => {
         // Create a deep copy of availableAutoUSNs to work with
@@ -422,7 +420,7 @@ const DefectTrackingTable = () => {
     };
 
 
-    const fileInputRef = useRef(null);
+    // const fileInputRef = useRef(null);
 
     // Create a composite key for grouping based on multiple fields
     const groupedData = _.groupBy(data, item =>
@@ -449,8 +447,6 @@ const DefectTrackingTable = () => {
         });
 
         // Reset analysis-related states
-        setAnalysisResults(null);
-        setSelectedFile(null);
         setSelectedFiles([]);
         setTableData([]);
         setInputValues([]);
@@ -471,8 +467,6 @@ const DefectTrackingTable = () => {
         });
 
         // Reset analysis-related states
-        setAnalysisResults(null);
-        setSelectedFile(null);
         setSelectedFiles([]);
         setTableData([]);
         setInputValues([]);
@@ -495,12 +489,6 @@ const DefectTrackingTable = () => {
         });
     };
 
-    const handleFileSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setSelectedFile(file);
-        }
-    };
 
     const handleAnalyzeImage = async (file, manualUSN, index) => {
         if (!file) {
