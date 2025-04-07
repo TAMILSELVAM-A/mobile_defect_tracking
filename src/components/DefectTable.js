@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import _ from 'lodash';
 import Picture1 from "../assets/Picture1.jpg";
 
@@ -100,12 +100,9 @@ const generateMobileDefectData = () => {
         }
     );
 
-    // Add more records for the first carton
-    for (let i = 1; i < cartonToAutoUSNMap.length; i++) {
-        const autoUSN = cartonToAutoUSNMap[i];
-        // For demo, let's make some manual USNs not match
-        const manualUSN = i === 2 || i == 4 || i == 0 ? 'SM-G998U-MISTYPED' : autoUSN;
+    const usnList = ['SM-G998U-XJ9P43', 'SM-G998U-L7MN54', 'SM-G998U-P9K7J2', 'SM-G998U-TW23K9'];
 
+    usnList.forEach(usn => {
         mobileDefectData.push({
             date: '04/03/2025',
             line: 'L1',
