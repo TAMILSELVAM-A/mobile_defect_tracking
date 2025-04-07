@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import Picture1 from "../assets/Picture1.jpg";
 
