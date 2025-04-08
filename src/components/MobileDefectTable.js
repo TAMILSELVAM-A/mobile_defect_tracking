@@ -27,6 +27,13 @@ import {
     Select,
     MenuItem,
 } from "@mui/material";
+import Webcam from "react-webcam";
+
+const videoConstraints = {
+    width: 1280,
+    height: 720,
+    facingMode: "user", // Use "environment" for the back camera on mobile devices
+};
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
@@ -121,79 +128,79 @@ const MobileDefectTable = () => {
         }
     };
 
-const processDataForGrouping = useCallback((jsonData) => {
-    const groupedByKeys = {};
+    const processDataForGrouping = useCallback((jsonData) => {
+        const groupedByKeys = {};
 
-    jsonData.forEach(row => {
-        const date = formatExcelDate(row["Inspection Date"]);
-        const line = row["Line"];
-        const stage = row["Stage"];
-        const shift = row["Shift"];
-        const project = row["Project"];
-        const cartonId = row["Carton ID"];
+        jsonData.forEach(row => {
+            const date = formatExcelDate(row["Inspection Date"]);
+            const line = row["Line"];
+            const stage = row["Stage"];
+            const shift = row["Shift"];
+            const project = row["Project"];
+            const cartonId = row["Carton ID"];
 
-        const groupKey = `${date}-${line}-${stage}-${shift}-${project}-${cartonId}`;
+            const groupKey = `${date}-${line}-${stage}-${shift}-${project}-${cartonId}`;
 
-        if (!groupedByKeys[groupKey]) {
-            groupedByKeys[groupKey] = {
-                date,
-                line,
-                stage,
-                shift,
-                project,
-                cartonId,
-                items: []
-            };
-        }
-        groupedByKeys[groupKey].items.push({
-            autoUsn: row["Auto USN"],
-            manualUsn: row["Manual USN Scan"],
-            symptoms: row["Symptoms "],
-            errCode: row["ERR Code "],
-            spec: row["Spec"],
-            defectPic: row["Defect Pic"],
-            actual: row["Actual"],
-            status: row["Result"]
+            if (!groupedByKeys[groupKey]) {
+                groupedByKeys[groupKey] = {
+                    date,
+                    line,
+                    stage,
+                    shift,
+                    project,
+                    cartonId,
+                    items: []
+                };
+            }
+            groupedByKeys[groupKey].items.push({
+                autoUsn: row["Auto USN"],
+                manualUsn: row["Manual USN Scan"],
+                symptoms: row["Symptoms "],
+                errCode: row["ERR Code "],
+                spec: row["Spec"],
+                defectPic: row["Defect Pic"],
+                actual: row["Actual"],
+                status: row["Result"]
+            });
         });
-    });
-    const groupedArray = Object.values(groupedByKeys).sort((a, b) => {
-        return new Date(b.date) - new Date(a.date);
-    });
+        const groupedArray = Object.values(groupedByKeys).sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
 
-    setGroupedData(groupedArray);
-}, []); // Add any dependencies here if needed
+        setGroupedData(groupedArray);
+    }, []); // Add any dependencies here if needed
 
-useEffect(() => {
-    const fetchExcelFile = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    useEffect(() => {
+        const fetchExcelFile = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                const worksheet = workbook.Sheets["Sheet2"];
+
+                if (!worksheet) {
+                    throw new Error("Sheet 'Sheet2' not found in workbook.");
+                }
+
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                setData(jsonData);
+                console.log("Excel Data Loaded:", jsonData);
+
+                processDataForGrouping(jsonData);
+            } catch (error) {
+                console.error("Error fetching or parsing Excel file:", error);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const arrayBuffer = await response.arrayBuffer();
-            const workbook = XLSX.read(arrayBuffer, { type: "array" });
-            const worksheet = workbook.Sheets["Sheet2"];
-
-            if (!worksheet) {
-                throw new Error("Sheet 'Sheet2' not found in workbook.");
-            }
-
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-            setData(jsonData);
-            console.log("Excel Data Loaded:", jsonData);
-
-            processDataForGrouping(jsonData);
-        } catch (error) {
-            console.error("Error fetching or parsing Excel file:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchExcelFile();
-}, [processDataForGrouping]);
+        fetchExcelFile();
+    }, [processDataForGrouping]);
 
 
     const handleInputChange = (e) => {
@@ -266,7 +273,7 @@ useEffect(() => {
             return;
         }
 
-        const analysis = AnalyzeDefect(manualUsn, URL.createObjectURL(uploadedImage));
+        const analysis = AnalyzeDefect(manualUsn, uploadedImage);
 
         setAvailableAutoUSNs((prevUSNs) => {
             const updatedUSNs = { ...prevUSNs };
@@ -673,7 +680,7 @@ useEffect(() => {
                 <DialogTitle>Scan USN</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 2 }}>
-                        <Grid item size={{ xs: 12, md: 6 }}>
+                        <Grid item size={{ xs: 12 }}>
                             <TextField
                                 label="Manual USN"
                                 value={manualUsn}
@@ -682,13 +689,36 @@ useEffect(() => {
                             />
                         </Grid>
                         <Grid item size={{ xs: 12, md: 6 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setUploadedImage(e.target.files[0])}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                <Webcam
+                                    audio={false}
+                                    height={200}
+                                    screenshotFormat="image/jpeg"
+                                    width="100%"
+                                    videoConstraints={videoConstraints}
+                                    ref={(webcam) => (window.webcam = webcam)}
                                 />
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                        const imageSrc = window.webcam.getScreenshot();
+                                        setUploadedImage(imageSrc);
+                                    }}
+                                >
+                                    Capture Image
+                                </Button>
                             </Box>
+                        </Grid>
+                        <Grid item size={{ xs: 12, md: 6 }}>
+                            {uploadedImage && (
+                                <img
+                                    src={uploadedImage}
+                                    alt="Captured"
+                                    style={{ maxHeight: '200px', marginTop: '10px' }}
+                                />
+                            )}
+                            {/* </Box> */}
                         </Grid>
                     </Grid>
                 </DialogContent>
