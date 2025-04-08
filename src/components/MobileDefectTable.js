@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useCallback } from "react";
 import * as XLSX from "xlsx";
 import {
     Snackbar,
@@ -121,27 +121,38 @@ const MobileDefectTable = () => {
         }
     };
 
-    const fetchExcelFile = async () => {
-            try {
-                const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                const worksheet = workbook.Sheets["Sheet2"];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                setData(jsonData);
-                console.log(jsonData, "jsonData");
-                processDataForGrouping(jsonData);
-            } catch (error) {
-                console.error("Error fetching or parsing Excel file:", error);
-            } finally {
-                setLoading(false);
+    const fetchExcelFile = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch("/Updated%20OQC%20QIT%20Automation.xlsx");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        };
+
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const worksheet = workbook.Sheets["Sheet2"];
+
+            if (!worksheet) {
+                throw new Error("Sheet 'Sheet2' not found in workbook.");
+            }
+
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            setData(jsonData);
+            console.log("Excel Data Loaded:", jsonData);
+
+            processDataForGrouping(jsonData);
+        } catch (error) {
+            console.error("Error fetching or parsing Excel file:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => {
+  useEffect(() => {
         fetchExcelFile();
-    }, []);
+    }, [fetchExcelFile]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
