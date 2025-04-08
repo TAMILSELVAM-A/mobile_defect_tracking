@@ -121,8 +121,7 @@ const MobileDefectTable = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchExcelFile = async () => {
+    const fetchExcelFile = async () => {
             try {
                 const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
                 const arrayBuffer = await response.arrayBuffer();
@@ -138,7 +137,8 @@ const MobileDefectTable = () => {
                 setLoading(false);
             }
         };
-
+    
+    useEffect(() => {
         fetchExcelFile();
     }, []);
 
