@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import {
     Snackbar,
@@ -121,7 +121,49 @@ const MobileDefectTable = () => {
         }
     };
 
-    useEffect(() => {
+const processDataForGrouping = useCallback((jsonData) => {
+    const groupedByKeys = {};
+
+    jsonData.forEach(row => {
+        const date = formatExcelDate(row["Inspection Date"]);
+        const line = row["Line"];
+        const stage = row["Stage"];
+        const shift = row["Shift"];
+        const project = row["Project"];
+        const cartonId = row["Carton ID"];
+
+        const groupKey = `${date}-${line}-${stage}-${shift}-${project}-${cartonId}`;
+
+        if (!groupedByKeys[groupKey]) {
+            groupedByKeys[groupKey] = {
+                date,
+                line,
+                stage,
+                shift,
+                project,
+                cartonId,
+                items: []
+            };
+        }
+        groupedByKeys[groupKey].items.push({
+            autoUsn: row["Auto USN"],
+            manualUsn: row["Manual USN Scan"],
+            symptoms: row["Symptoms "],
+            errCode: row["ERR Code "],
+            spec: row["Spec"],
+            defectPic: row["Defect Pic"],
+            actual: row["Actual"],
+            status: row["Result"]
+        });
+    });
+    const groupedArray = Object.values(groupedByKeys).sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+    });
+
+    setGroupedData(groupedArray);
+}, []); // Add any dependencies here if needed
+
+useEffect(() => {
     const fetchExcelFile = async () => {
         setLoading(true);
         try {
@@ -172,50 +214,6 @@ const MobileDefectTable = () => {
             [name]: value
         });
     };
-
-    const processDataForGrouping = (jsonData) => {
-
-        const groupedByKeys = {};
-
-        jsonData.forEach(row => {
-            const date = formatExcelDate(row["Inspection Date"]);
-            const line = row["Line"];
-            const stage = row["Stage"];
-            const shift = row["Shift"];
-            const project = row["Project"];
-            const cartonId = row["Carton ID"];
-
-            const groupKey = `${date}-${line}-${stage}-${shift}-${project}-${cartonId}`;
-
-            if (!groupedByKeys[groupKey]) {
-                groupedByKeys[groupKey] = {
-                    date,
-                    line,
-                    stage,
-                    shift,
-                    project,
-                    cartonId,
-                    items: []
-                };
-            }
-            groupedByKeys[groupKey].items.push({
-                autoUsn: row["Auto USN"],
-                manualUsn: row["Manual USN Scan"],
-                symptoms: row["Symptoms "],
-                errCode: row["ERR Code "],
-                spec: row["Spec"],
-                defectPic: row["Defect Pic"],
-                actual: row["Actual"],
-                status: row["Result"]
-            });
-        });
-        const groupedArray = Object.values(groupedByKeys).sort((a, b) => {
-            return new Date(b.date) - new Date(a.date);
-        });
-
-        setGroupedData(groupedArray);
-    };
-
 
     const handleDialogOpen = () => {
         setDialogOpen(true);
