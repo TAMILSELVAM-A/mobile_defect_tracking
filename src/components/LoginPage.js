@@ -173,7 +173,7 @@ const LoginPage = () => {
                         >
                             <BugReportIcon sx={{ color: 'white', fontSize: 32, mr: 1 }} />
                             <Typography variant="h5" component="h1" color="white" fontWeight="bold">
-                                Mobile Defect Detection
+                                    QIT - Digitalization 
                             </Typography>
                         </Box>
 
@@ -192,7 +192,7 @@ const LoginPage = () => {
                                         Login
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                        Enter your credentials to access the defect detection system
+                                        Enter your credentials to access the QIT - Digitalization 
                                     </Typography>
                                 </Box>
 
