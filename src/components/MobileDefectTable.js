@@ -60,16 +60,15 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-const usnToMap = {
-    'SLGF-WV5RT-M2310': ["SLGF2WV5RT3", 'SFRWWL9X3T5', 'SFCWCX2XJMF', 'SFRWWL9XVV5', 'SGYL4KG6MTX'],
-    'ASP-N899I-JH12P': ["AS-G998U-L7MN54", 'AS-G998U-P9K7J2', 'AS-G998U-TW23K9'],
-}
+// const usnToMap = {
+//     'SLGF-WV5RT-M2310': ["SLGF2WV5RT3", 'SFRWWL9X3T5', 'SFCWCX2XJMF', 'SFRWWL9XVV5', 'SGYL4KG6MTX'],
+//     'ASP-N899I-JH12P': ["AS-G998U-L7MN54", 'AS-G998U-P9K7J2', 'AS-G998U-TW23K9'],
+// }
 
-const cartonToAutoUSNMap = [
-    '8884620325076240',
-    '8884620325076241',
-    '8884620325076242',
-];
+const cartonToAutoUSNMap = {
+    '8884620325076240': ["SLGF2WV5RT3", 'SFRWWL9X3T5', 'SFCWCX2XJMF', 'SFRWWL9XVV5', 'SGYL4KG6MTX'],
+    '8884620325076241': ["AS-G998U-L7MN54", 'AS-G998U-P9K7J2', 'AS-G998U-TW23K9']
+};
 
 const MobileDefectTable = () => {
     const [data, setData] = useState([]);
@@ -83,7 +82,6 @@ const MobileDefectTable = () => {
         line: "",
         shift: "",
         cartonId: "",
-        usnId: "",
     });
     const [manualUsn, setManualUsn] = useState("");
     const [uploadedImage, setUploadedImage] = useState(null);
@@ -91,6 +89,13 @@ const MobileDefectTable = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("info");
+    const [isFrontCamera, setIsFrontCamera] = useState(true);
+
+    const videoConstraints = {
+        width: 1280,
+        height: 720,
+        facingMode: isFrontCamera ? "user" : "environment",
+    };
 
     const showSnackbar = (message, severity = "info") => {
         setSnackbarMessage(message);
@@ -206,15 +211,14 @@ const MobileDefectTable = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === 'usnId') {
-            const autoUSNs = usnToMap[value] || [];
+        if (name === 'cartonId') {
+            const autoUSNs = cartonToAutoUSNMap[value] || [];
             const formattedAutoUSNs = autoUSNs.reduce((acc, usn) => {
                 acc[usn] = { autousn: usn };
                 return acc;
             }, {});
             setAvailableAutoUSNs(formattedAutoUSNs);
         }
-
 
         setFormData({
             ...formData,
@@ -260,7 +264,7 @@ const MobileDefectTable = () => {
     ];
 
     const AnalyzeDefect = (manualUsn, image) => {
-        const hasDefect = Math.random() < 0.8;
+        const hasDefect = Math.random() < 0.2;
         const defect = hasDefect ? mobileDefects[Math.floor(Math.random() * mobileDefects.length)] : null;
         const result = hasDefect ? "NG" : "OK";
         return { manualUsn, image, defect, result };
@@ -322,8 +326,8 @@ const MobileDefectTable = () => {
     };
 
     const handleAddRecord = () => {
-        const { project, stage, line, shift, cartonId, usnId } = formData;
-        if (!project || !stage || !line || !shift || !cartonId || !usnId) {
+        const { project, stage, line, shift, cartonId } = formData;
+        if (!project || !stage || !line || !shift || !cartonId) {
             showSnackbar("Please fill in all required fields.", "warning");
             return;
         }
@@ -357,7 +361,6 @@ const MobileDefectTable = () => {
             line: "",
             shift: "",
             cartonId: "",
-            usnId: "",
         });
         setManualUsn("");
         setUploadedImage(null);
@@ -589,13 +592,13 @@ const MobileDefectTable = () => {
                                     onChange={handleInputChange}
                                     required
                                 >
-                                    {cartonToAutoUSNMap.map((cartonId) => (
+                                    {Object.keys(cartonToAutoUSNMap).map((cartonId) => (
                                         <MenuItem key={cartonId} value={cartonId}>{cartonId}</MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
+                        {/* <Grid item size={{ xs: 12, md: 6 }}>
                             <FormControl fullWidth margin="dense">
                                 <InputLabel>USN ID *</InputLabel>
                                 <Select
@@ -610,8 +613,8 @@ const MobileDefectTable = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
+                        </Grid> */}
+                        <Grid item size={{ xs: 12, md: 12 }}>
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -698,6 +701,17 @@ const MobileDefectTable = () => {
                                     videoConstraints={videoConstraints}
                                     ref={(webcam) => (window.webcam = webcam)}
                                 />
+                            </Box>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { xs: 'column', sm: 'row' },
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mt: 2,
+                                }}
+                            >
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -705,8 +719,40 @@ const MobileDefectTable = () => {
                                         const imageSrc = window.webcam.getScreenshot();
                                         setUploadedImage(imageSrc);
                                     }}
+                                    sx={{ flex: 1 }}
                                 >
                                     Capture Image
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={() => setIsFrontCamera((prev) => !prev)} // Toggle between front and back cameras
+                                    sx={{ flex: 1 }}
+                                >
+                                    Switch Camera
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    component="label"
+                                    color="secondary"
+                                    sx={{ flex: 1 }}
+                                >
+                                    Upload Image
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                    setUploadedImage(event.target.result);
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                    />
                                 </Button>
                             </Box>
                         </Grid>
@@ -714,7 +760,7 @@ const MobileDefectTable = () => {
                             {uploadedImage && (
                                 <img
                                     src={uploadedImage}
-                                    alt="Captured"
+                                    alt="Uploaded"
                                     style={{ maxHeight: '200px', marginTop: '10px' }}
                                 />
                             )}
