@@ -29,6 +29,7 @@ import {
 } from "@mui/material";
 import Webcam from "react-webcam";
 
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
     color: 'white',
@@ -397,12 +398,14 @@ const MobileDefectTable = () => {
         return <Typography variant="h6" align="center" sx={{ mt: 4 }}>No data found.</Typography>;
     }
 
+    console.log(Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn), "Available Auto USNs:", availableAutoUSNs);
+
     return (
         <Container>
             <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
                     <Typography variant="h5" component="h2">
-                        Mobile Device Defect Tracking
+                        QIT - Digitalization 
                     </Typography>
                     <Button
                         variant="contained"
@@ -668,7 +671,12 @@ const MobileDefectTable = () => {
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleAddRecord} color="primary" variant="contained">Add Record</Button>
+                    <Button onClick={handleAddRecord} color="primary" variant="contained" disabled={
+                        Object.keys(availableAutoUSNs).length === 0 || // Disable if no rows exist
+                        Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn) // Disable if any row is missing a manualUsn
+                    }>
+                        Add Record
+                    </Button>
                     <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
                 </DialogActions>
             </Dialog>
