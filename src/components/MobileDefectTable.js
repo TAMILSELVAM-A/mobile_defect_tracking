@@ -85,6 +85,7 @@ const MobileDefectTable = () => {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("info");
     const [isFrontCamera, setIsFrontCamera] = useState(true);
+    const [isCameraActive, setIsCameraActive] = useState(false);
 
     const videoConstraints = {
         width: 1280,
@@ -405,7 +406,7 @@ const MobileDefectTable = () => {
             <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
                     <Typography variant="h5" component="h2">
-                        QIT - Digitalization 
+                        QIT - Digitalization
                     </Typography>
                     <Button
                         variant="contained"
@@ -681,7 +682,10 @@ const MobileDefectTable = () => {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={scanDialogOpen} onClose={handleScanDialogClose} maxWidth="md" fullWidth>
+            <Dialog open={scanDialogOpen} onClose={() => {
+                handleScanDialogClose();
+                setIsCameraActive(false); // Turn off the camera when the dialog closes
+            }} maxWidth="md" fullWidth>
                 <DialogTitle>Scan USN</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -695,14 +699,17 @@ const MobileDefectTable = () => {
                         </Grid>
                         <Grid item size={{ xs: 12, md: 6 }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                                <Webcam
-                                    audio={false}
-                                    height={200}
-                                    screenshotFormat="image/jpeg"
-                                    width="100%"
-                                    videoConstraints={videoConstraints}
-                                    ref={(webcam) => (window.webcam = webcam)}
-                                />
+                                {/* Render Webcam only if isCameraActive is true */}
+                                {isCameraActive && (
+                                    <Webcam
+                                        audio={false}
+                                        height={200}
+                                        screenshotFormat="image/jpeg"
+                                        width="100%"
+                                        videoConstraints={videoConstraints}
+                                        ref={(webcam) => (window.webcam = webcam)}
+                                    />
+                                )}
                             </Box>
                             <Box
                                 sx={{
@@ -718,8 +725,12 @@ const MobileDefectTable = () => {
                                     variant="contained"
                                     color="primary"
                                     onClick={() => {
-                                        const imageSrc = window.webcam.getScreenshot();
-                                        setUploadedImage(imageSrc);
+                                        setIsCameraActive(true); // Activate the camera
+                                        const imageSrc = window.webcam?.getScreenshot();
+                                        if (imageSrc) {
+                                            setUploadedImage(imageSrc);
+                                            setIsCameraActive(false); // Deactivate the camera after capturing
+                                        }
                                     }}
                                     sx={{ flex: 1 }}
                                 >
@@ -728,8 +739,9 @@ const MobileDefectTable = () => {
                                 <Button
                                     variant="contained"
                                     color="secondary"
-                                    onClick={() => setIsFrontCamera((prev) => !prev)} // Toggle between front and back cameras
+                                    onClick={() => setIsFrontCamera((prev) => !prev)}
                                     sx={{ flex: 1 }}
+                                    disabled={!isCameraActive} // Disable if the camera is not active
                                 >
                                     Switch Camera
                                 </Button>
@@ -766,13 +778,15 @@ const MobileDefectTable = () => {
                                     style={{ maxHeight: '200px', marginTop: '10px' }}
                                 />
                             )}
-                            {/* </Box> */}
                         </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleAnalyze} color="primary" variant="contained">Analyze</Button>
-                    <Button onClick={handleScanDialogClose} color="error" variant="contained">Close</Button>
+                    <Button onClick={() => {
+                        handleScanDialogClose();
+                        setIsCameraActive(false);
+                    }} color="error" variant="contained">Close</Button>
                 </DialogActions>
             </Dialog>
             <Snackbar
