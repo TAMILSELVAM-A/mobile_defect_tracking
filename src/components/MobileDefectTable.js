@@ -266,7 +266,6 @@ const MobileDefectTable = () => {
         return { manualUsn, image, defect, result };
     };
 
-
     const handleAnalyze = () => {
         if (!manualUsn || !uploadedImage) {
             showSnackbar("Please enter a Manual USN and upload an image.", "warning");
@@ -278,9 +277,15 @@ const MobileDefectTable = () => {
         setAvailableAutoUSNs((prevUSNs) => {
             const updatedUSNs = { ...prevUSNs };
 
-            if (updatedUSNs[manualUsn]) {
-                updatedUSNs[manualUsn] = {
-                    ...updatedUSNs[manualUsn],
+            // Check if the manual USN matches any auto USN (case-insensitive)
+            const matchedKey = Object.keys(updatedUSNs).find(
+                (key) => key.toLowerCase() === manualUsn.toLowerCase()
+            );
+
+            if (matchedKey) {
+                // Allow remapping if the manual USN matches the auto USN, even if it was previously mapped
+                updatedUSNs[matchedKey] = {
+                    ...updatedUSNs[matchedKey],
                     manualUsn: manualUsn,
                     image: analysis.result === "NG" ? analysis.image : null,
                     symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-",
@@ -289,18 +294,28 @@ const MobileDefectTable = () => {
                     actual: analysis.defect ? analysis.defect.actual() : "-",
                     result: analysis.result,
                 };
+                // showSnackbar("Manual USN successfully mapped to the correct auto USN row.", "success");
             } else {
-                const keys = Object.keys(updatedUSNs);
-                const availableKeys = keys.filter((key) => {
-                    const row = updatedUSNs[key];
-                    return row.result !== "Mismatch";
-                });
+                // Find all unmatched rows (rows without a manual USN)
+                const unmatchedKeys = Object.keys(updatedUSNs).filter(
+                    (key) => !updatedUSNs[key].manualUsn
+                );
 
-                if (availableKeys.length > 0) {
-                    const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
-                    updatedUSNs[randomKey] = {
-                        ...updatedUSNs[randomKey],
-                        manualUsn: manualUsn,
+                if (unmatchedKeys.length === 0) {
+                    // All rows are already matched
+                    showSnackbar("Error: All manual USNs matched—no unmatched data to distribute.", "error");
+                    return updatedUSNs;
+                }
+
+                // Check if the manual USN is already mapped to an unmatched row
+                const alreadyMappedKey = Object.keys(updatedUSNs).find(
+                    (key) => updatedUSNs[key].manualUsn && updatedUSNs[key].manualUsn.toLowerCase() === manualUsn.toLowerCase()
+                );
+
+                if (alreadyMappedKey) {
+                    // Update the existing unmatched row with the new analysis
+                    updatedUSNs[alreadyMappedKey] = {
+                        ...updatedUSNs[alreadyMappedKey],
                         image: analysis.result === "NG" ? analysis.image : null,
                         symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-",
                         errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-",
@@ -308,8 +323,26 @@ const MobileDefectTable = () => {
                         actual: analysis.defect ? analysis.defect.actual() : "-",
                         result: analysis.result,
                     };
+                    // showSnackbar("Manual USN updated in its previously mapped unmatched row.", "success");
                 } else {
-                    showSnackbar("No available rows to assign the mismatched USN.", "error");
+                    if (unmatchedKeys.length > 0) {
+                        // Map the manual USN to the first available unmatched row
+                        const targetKey = unmatchedKeys[0];
+                        updatedUSNs[targetKey] = {
+                            ...updatedUSNs[targetKey],
+                            manualUsn: manualUsn,
+                            image: analysis.result === "NG" ? analysis.image : null,
+                            symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-",
+                            errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-",
+                            spec: analysis.defect && analysis.defect.spec ? analysis.defect.spec : "-",
+                            actual: analysis.defect ? analysis.defect.actual() : "-",
+                            result: analysis.result,
+                        };
+                        // showSnackbar("Manual USN mapped to an unmatched row.", "success");
+                    } else {
+                        // Insufficient unmapped rows for unmatched USNs
+                        showSnackbar("Error: Insufficient unmapped rows for unmatched USNs.", "error");
+                    }
                 }
             }
 
