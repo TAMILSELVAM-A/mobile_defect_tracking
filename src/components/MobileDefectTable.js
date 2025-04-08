@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import {
+    Snackbar,
+    Alert,
     Table,
     TableBody,
     TableCell,
@@ -24,7 +26,6 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    Tab
 } from "@mui/material";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -79,8 +80,21 @@ const MobileDefectTable = () => {
     });
     const [manualUsn, setManualUsn] = useState("");
     const [uploadedImage, setUploadedImage] = useState(null);
-    const [analyzedData, setAnalyzedData] = useState([]);
     const [scanDialogOpen, setScanDialogOpen] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("info");
+
+    const showSnackbar = (message, severity = "info") => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
 
     const handleScanDialogOpen = () => {
         setScanDialogOpen(true);
@@ -91,9 +105,7 @@ const MobileDefectTable = () => {
     };
 
     const formatExcelDate = (excelDate) => {
-        console.log(excelDate, "excelDate")
         if (typeof excelDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
-            // If the value is already in "YYYY-MM-DD" format, return it as is
             return excelDate;
         }
 
@@ -185,9 +197,13 @@ const MobileDefectTable = () => {
                 status: row["Result"]
             });
         });
-        const groupedArray = Object.values(groupedByKeys);
+        const groupedArray = Object.values(groupedByKeys).sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+
         setGroupedData(groupedArray);
     };
+
 
     const handleDialogOpen = () => {
         setDialogOpen(true);
@@ -236,7 +252,7 @@ const MobileDefectTable = () => {
 
     const handleAnalyze = () => {
         if (!manualUsn || !uploadedImage) {
-            alert("Please enter a Manual USN and upload an image.");
+            showSnackbar("Please enter a Manual USN and upload an image.", "warning");
             return;
         }
 
@@ -246,41 +262,37 @@ const MobileDefectTable = () => {
             const updatedUSNs = { ...prevUSNs };
 
             if (updatedUSNs[manualUsn]) {
-                // If the manual USN matches an existing auto USN
                 updatedUSNs[manualUsn] = {
                     ...updatedUSNs[manualUsn],
                     manualUsn: manualUsn,
-                    image: analysis.result === "NG" ? analysis.image : null, // Show image only if result is NG
-                    symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-", // Default to "-"
-                    errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-", // Default to "-"
-                    spec: analysis.defect && analysis.defect.spec ? analysis.defect.spec : "-", // Default to "-"
+                    image: analysis.result === "NG" ? analysis.image : null,
+                    symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-",
+                    errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-",
+                    spec: analysis.defect && analysis.defect.spec ? analysis.defect.spec : "-",
                     actual: analysis.defect ? analysis.defect.actual() : "-",
                     result: analysis.result,
                 };
             } else {
-                // Handle mismatched USN
                 const keys = Object.keys(updatedUSNs);
                 const availableKeys = keys.filter((key) => {
-                    // Only consider rows that are not already mismatched
                     const row = updatedUSNs[key];
                     return row.result !== "Mismatch";
                 });
 
                 if (availableKeys.length > 0) {
-                    // Select a random row from the available keys
                     const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
                     updatedUSNs[randomKey] = {
                         ...updatedUSNs[randomKey],
                         manualUsn: manualUsn,
-                        image: analysis.result === "NG" ? analysis.image : null, // Show image only if result is NG
-                        symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-", // Default to "-"
-                        errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-", // Default to "-"
-                        spec: analysis.defect && analysis.defect.spec ? analysis.defect.spec : "-", // Default to "-"
+                        image: analysis.result === "NG" ? analysis.image : null,
+                        symptoms: analysis.defect && analysis.defect.symptom ? analysis.defect.symptom : "-",
+                        errCode: analysis.defect && analysis.defect.errCode ? analysis.defect.errCode : "-",
+                        spec: analysis.defect && analysis.defect.spec ? analysis.defect.spec : "-",
                         actual: analysis.defect ? analysis.defect.actual() : "-",
                         result: analysis.result,
                     };
                 } else {
-                    alert("No available rows to assign the mismatched USN.");
+                    showSnackbar("No available rows to assign the mismatched USN.", "error");
                 }
             }
 
@@ -295,11 +307,11 @@ const MobileDefectTable = () => {
     const handleAddRecord = () => {
         const { project, stage, line, shift, cartonId, usnId } = formData;
         if (!project || !stage || !line || !shift || !cartonId || !usnId) {
-            alert("Please fill in all required fields.");
+            showSnackbar("Please fill in all required fields.", "warning");
             return;
         }
 
-        const todayDate = getTodayDate();
+        const todayDate = getTodayDate().split(' ')[0];
         const newRecords = Object.entries(availableAutoUSNs).map(([autoUsn, usnData]) => ({
             "Inspection Date": todayDate,
             Project: project,
@@ -309,12 +321,12 @@ const MobileDefectTable = () => {
             "Carton ID": cartonId,
             "Auto USN": autoUsn,
             "Manual USN Scan": usnData.manualUsn || "-",
-            "Symptoms ": usnData.symptoms || "-", // Default value
-            "ERR Code ": usnData.errCode || "-", // Default value
-            Spec: usnData.spec || "-", // Default value
+            "Symptoms ": usnData.symptoms || "-",
+            "ERR Code ": usnData.errCode || "-",
+            Spec: usnData.spec || "-",
             "Defect Pic": usnData.image || null,
-            Actual: usnData.actual || "-", // Default value
-            Result: usnData.result || "-", // Default value
+            Actual: usnData.actual || "-",
+            Result: usnData.result || "-",
         }));
 
         const updatedData = [...data, ...newRecords];
@@ -332,9 +344,9 @@ const MobileDefectTable = () => {
         });
         setManualUsn("");
         setUploadedImage(null);
-        setAvailableAutoUSNs({}); // Clear the USN table
+        setAvailableAutoUSNs({});
 
-        alert("Records added successfully!");
+        showSnackbar("Records added successfully!", "success");
         setDialogOpen(false);
     };
 
@@ -353,7 +365,10 @@ const MobileDefectTable = () => {
         hours = hours ? hours : 12;
         const formattedHours = String(hours).padStart(2, '0');
 
-        return `${year}-${month}-${day}`;
+        const date = `${year}-${month}-${day}`;
+        const time = `${formattedHours}:${minutes} ${ampm}`;
+
+        return `${date} ${time}`;
     };
 
     if (loading) {
@@ -448,8 +463,8 @@ const MobileDefectTable = () => {
                                                 </GroupCell>
                                             </>
                                         ) : null}
-                                        <TableCell sx={{ color: item.autoUsn == item.manualUsn ? "green" : "red" }}>{item.autoUsn}</TableCell>
-                                        <TableCell sx={{ color: item.autoUsn == item.manualUsn ? "green" : "red" }}>{item.manualUsn}</TableCell>
+                                        <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.autoUsn}</TableCell>
+                                        <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.manualUsn}</TableCell>
                                         <TableCell>{item.symptoms}</TableCell>
                                         <TableCell>{item.errCode}</TableCell>
                                         <TableCell>{item.spec}</TableCell>
@@ -462,7 +477,7 @@ const MobileDefectTable = () => {
                                                 />
                                             )}</TableCell>
                                         <TableCell>{item.actual}</TableCell>
-                                        <TableCell sx={{ color: item.status == "OK" ? "green" : "red" }}>{item.status}</TableCell>
+                                        <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{item.status}</TableCell>
                                     </StyledTableRow>
                                 ))
                             ))}
@@ -619,7 +634,7 @@ const MobileDefectTable = () => {
                                                     </TableCell>
                                                     <TableCell>
                                                         {usnValue.image && (
-                                                            <img src={usnValue.image} alt="defect image" style={{ maxHeight: '60px' }} />
+                                                            <img src={usnValue.image} alt="defect" style={{ maxHeight: '60px' }} />
                                                         )}
                                                     </TableCell>
                                                     <TableCell>{usnValue.symptoms || ""}</TableCell>
@@ -639,8 +654,8 @@ const MobileDefectTable = () => {
                     </Grid>
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={handleAddRecord} color="primary" variant="contained">Add Record</Button>
                     <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
-                    <Button onClick={handleAddRecord} color="primary">Add Record</Button>
                 </DialogActions>
             </Dialog>
 
@@ -672,6 +687,16 @@ const MobileDefectTable = () => {
                     <Button onClick={handleScanDialogClose} color="error" variant="contained">Close</Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };
