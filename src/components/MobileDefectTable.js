@@ -260,7 +260,7 @@ const MobileDefectTable = () => {
     ];
 
     const AnalyzeDefect = (manualUsn, image) => {
-        const hasDefect = Math.random() < 0.2;
+        const hasDefect = Math.random() < 0.8;
         const defect = hasDefect ? mobileDefects[Math.floor(Math.random() * mobileDefects.length)] : null;
         const result = hasDefect ? "NG" : "OK";
         return { manualUsn, image, defect, result };
