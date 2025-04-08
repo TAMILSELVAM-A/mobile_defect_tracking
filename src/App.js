@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage"; // Fixed semicolon typo
-import DefectTrackingTable from "./components/DefectTable";
+import DefectTrackingTable from "./components/MobileDefectTable";
 
 const App = () => {
   return (
