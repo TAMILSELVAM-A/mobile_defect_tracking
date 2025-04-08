@@ -29,12 +29,6 @@ import {
 } from "@mui/material";
 import Webcam from "react-webcam";
 
-const videoConstraints = {
-    width: 1280,
-    height: 720,
-    facingMode: "user", // Use "environment" for the back camera on mobile devices
-};
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
     color: 'white',
