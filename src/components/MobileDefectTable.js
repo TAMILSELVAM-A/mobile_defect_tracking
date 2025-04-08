@@ -121,10 +121,11 @@ const MobileDefectTable = () => {
         }
     };
 
-    const fetchExcelFile = useCallback(async () => {
+    useEffect(() => {
+    const fetchExcelFile = async () => {
         setLoading(true);
         try {
-            const response = await fetch("/Updated%20OQC%20QIT%20Automation.xlsx");
+            const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -147,12 +148,11 @@ const MobileDefectTable = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-        fetchExcelFile();
-    }, [fetchExcelFile]);
+    fetchExcelFile();
+}, [processDataForGrouping]);
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
