@@ -683,18 +683,20 @@ const TrackingTable = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item size={{ xs: 12, md: 12 }}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                size="large"
-                                fullWidth
-                                sx={{ display: "flex", justifyContent: "center" }}
-                                onClick={handleScanDialogOpen}
-                            >
-                                Scan USN
-                            </Button>
-                        </Grid>
+                        {formData.cartonId &&
+                            <Grid item size={{ xs: 12, md: 12 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    fullWidth
+                                    sx={{ display: "flex", justifyContent: "center" }}
+                                    onClick={handleScanDialogOpen}
+                                >
+                                    Scan USN
+                                </Button>
+                            </Grid>
+                        }
                         <Grid item size={{ xs: 12, md: 12 }}>
                             {Object.keys(availableAutoUSNs).length > 0 && (
                                 <TableContainer component={Paper} sx={{ mt: 2 }}>
