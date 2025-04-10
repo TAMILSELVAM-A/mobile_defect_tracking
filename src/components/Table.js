@@ -30,6 +30,8 @@ import {
 import Webcam from "react-webcam";
 import SensorOccupiedIcon from '@mui/icons-material/SensorOccupied';
 import DeleteIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from "react-router-dom";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
@@ -123,6 +125,7 @@ function getDefectInfo(symptom, location) {
 }
 
 const TrackingTable = () => {
+    const navigate = useNavigate()
     const [data, setData] = useState([]);
     const [groupedData, setGroupedData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -206,23 +209,24 @@ const TrackingTable = () => {
                 const { defectLocation, defectSymptoms } = updatedDetails[usnKey];
                 if (defectLocation !== "Other" && defectSymptoms !== "Other" && defectLocation && defectSymptoms) {
                     const defectInfo = getDefectInfo(defectSymptoms, defectLocation);
-                    updatedDetails[usnKey] = { ...updatedDetails[usnKey], ...defectInfo };
+                    updatedDetails[usnKey] = {
+                        ...updatedDetails[usnKey],
+                        errCode: defectInfo.errCode,
+                        spec: defectInfo.spec
+                    };
                 }
                 if (defectLocation && defectSymptoms) {
                     if (defectLocation === "N/A" && defectSymptoms === "N/A") {
                         updatedDetails[usnKey].result = "OK";
-                    }
-                    else {
+                    } else {
                         updatedDetails[usnKey].result = "NG";
                     }
                 }
-
             }
 
             if (value === "Other") {
                 updatedDetails[usnKey].errCode = "";
                 updatedDetails[usnKey].spec = "";
-                updatedDetails[usnKey].actual = "";
             }
             return updatedDetails;
         });
@@ -487,15 +491,20 @@ const TrackingTable = () => {
 
     return (
         <Container maxWidth={"false"}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", mt: 1 }}>
+                <Box sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
+                    <LogoutIcon color="error" /> Logout
+                </Box>
+            </Box>
             <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
-                    <Typography variant="h5" component="h2">
+                <Box sx={{ mb: 2, alignItems: 'center', display: "flex", justifyContent: "center" }}>
+                    <Typography variant="h5" component="h2" sx={{ textAlign: "center", flex: 1 }}>
                         QIT - Digitalization
                     </Typography>
                     <Button
                         variant="contained"
                         color="primary"
-                        sx={{ marginLeft: 'auto' }}
+                        sx={{ marginLeft: 'auto', display: "flex", justifyContent: "flex-end" }}
                         onClick={handleDialogOpen}
                     >
                         New Defect
@@ -809,7 +818,7 @@ const TrackingTable = () => {
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
+                                                        {usnKey === usnValue.manualUsn &&
                                                             <input
                                                                 type="text"
                                                                 placeholder="Enter Actual"
@@ -817,9 +826,7 @@ const TrackingTable = () => {
                                                                 onChange={(e) => handleDefectChange(usnKey, "actual", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             />
-                                                        ) : (
-                                                            usnValue?.actual || ""
-                                                        )}
+                                                        }
                                                     </TableCell>
                                                     <TableCell align="center" style={{ position: "relative" }}>
                                                         {usnKey === usnValue.manualUsn ? (
