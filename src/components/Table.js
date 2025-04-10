@@ -30,8 +30,9 @@ import {
 import Webcam from "react-webcam";
 import SensorOccupiedIcon from '@mui/icons-material/SensorOccupied';
 import DeleteIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import LogoutIcon from '@mui/icons-material/Logout';
-import { useNavigate } from "react-router-dom";
+import FlipCameraAndroidIcon from '@mui/icons-material/FlipCameraAndroid';
+import Scanner from '@mui/icons-material/DocumentScanner';
+import Navbar from "./Navbar";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
@@ -125,7 +126,6 @@ function getDefectInfo(symptom, location) {
 }
 
 const TrackingTable = () => {
-    const navigate = useNavigate()
     const [data, setData] = useState([]);
     const [groupedData, setGroupedData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -490,531 +490,535 @@ const TrackingTable = () => {
 
 
     return (
-        <Container maxWidth={"false"}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", mt: 1 }}>
-                <Box sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
-                    <LogoutIcon color="error" /> Logout
+        <>
+            <Navbar />
+            <Container maxWidth={"false"}>
+                <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2 }}>
+                    <Box sx={{ mb: 2, alignItems: 'center', display: "flex", justifyContent: "center" }}>
+                        <Typography variant="h5" component="h2" sx={{ textAlign: "center", flex: 1 }}>
+                            QIT - Digitalization
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ marginLeft: 'auto', display: "flex", justifyContent: "flex-end" }}
+                            onClick={handleDialogOpen}
+                        >
+                            New Defect
+                        </Button>
+                    </Box>
+                    <TableContainer component={Paper}>
+                        <Table size="small" aria-label="defect table">
+                            <TableHead>
+                                <TableRow>
+                                    <StyledTableCell>Date</StyledTableCell>
+                                    <StyledTableCell>Project</StyledTableCell>
+                                    <StyledTableCell>Stage</StyledTableCell>
+                                    <StyledTableCell>Line</StyledTableCell>
+                                    <StyledTableCell>Shift</StyledTableCell>
+                                    <StyledTableCell>Carton ID</StyledTableCell>
+                                    <StyledTableCell>Auto USN</StyledTableCell>
+                                    <StyledTableCell>Manual USN</StyledTableCell>
+                                    <StyledTableCell>Defect Location</StyledTableCell>
+                                    <StyledTableCell>Defect Symptoms</StyledTableCell>
+                                    <StyledTableCell>ERR Code</StyledTableCell>
+                                    <StyledTableCell>Spec</StyledTableCell>
+                                    <StyledTableCell>Defect Pic</StyledTableCell>
+                                    <StyledTableCell>Actual</StyledTableCell>
+                                    <StyledTableCell>Status</StyledTableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {groupedData.map((group, groupIndex) => (
+                                    group.items.map((item, itemIndex) => (
+                                        <StyledTableRow key={`${groupIndex}-${itemIndex}`}>
+                                            {itemIndex === 0 ? (
+                                                <>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.date}
+                                                    </GroupCell>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.project}
+                                                    </GroupCell>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.stage}
+                                                    </GroupCell>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.line}
+                                                    </GroupCell>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.shift}
+                                                    </GroupCell>
+                                                    <GroupCell
+                                                        rowSpan={group.items.length}
+                                                        sx={{ backgroundColor: '#e3f2fd' }}
+                                                    >
+                                                        {group.cartonId}
+                                                    </GroupCell>
+                                                </>
+                                            ) : null}
+                                            <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.autoUsn}</TableCell>
+                                            <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.manualUsn}</TableCell>
+                                            <TableCell>{item.defectLocation}</TableCell>
+                                            <TableCell>{item.defectSymptoms}</TableCell>
+                                            <TableCell>{item.errCode}</TableCell>
+                                            <TableCell>{item.spec}</TableCell>
+                                            <TableCell>
+                                                {item.defectPic && (
+                                                    <img
+                                                        src={item.defectPic}
+                                                        alt="Defect"
+                                                        style={{ maxHeight: '60px' }}
+                                                    />
+                                                )}</TableCell>
+                                            <TableCell>{item.actual}</TableCell>
+                                            <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{item.status}</TableCell>
+                                        </StyledTableRow>
+                                    ))
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Box>
-            </Box>
-            <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2 }}>
-                <Box sx={{ mb: 2, alignItems: 'center', display: "flex", justifyContent: "center" }}>
-                    <Typography variant="h5" component="h2" sx={{ textAlign: "center", flex: 1 }}>
-                        QIT - Digitalization
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ marginLeft: 'auto', display: "flex", justifyContent: "flex-end" }}
-                        onClick={handleDialogOpen}
-                    >
-                        New Defect
-                    </Button>
-                </Box>
-                <TableContainer component={Paper}>
-                    <Table size="small" aria-label="defect table">
-                        <TableHead>
-                            <TableRow>
-                                <StyledTableCell>Date</StyledTableCell>
-                                <StyledTableCell>Project</StyledTableCell>
-                                <StyledTableCell>Stage</StyledTableCell>
-                                <StyledTableCell>Line</StyledTableCell>
-                                <StyledTableCell>Shift</StyledTableCell>
-                                <StyledTableCell>Carton ID</StyledTableCell>
-                                <StyledTableCell>Auto USN</StyledTableCell>
-                                <StyledTableCell>Manual USN</StyledTableCell>
-                                <StyledTableCell>Defect Location</StyledTableCell>
-                                <StyledTableCell>Defect Symptoms</StyledTableCell>
-                                <StyledTableCell>ERR Code</StyledTableCell>
-                                <StyledTableCell>Spec</StyledTableCell>
-                                <StyledTableCell>Defect Pic</StyledTableCell>
-                                <StyledTableCell>Actual</StyledTableCell>
-                                <StyledTableCell>Status</StyledTableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {groupedData.map((group, groupIndex) => (
-                                group.items.map((item, itemIndex) => (
-                                    <StyledTableRow key={`${groupIndex}-${itemIndex}`}>
-                                        {itemIndex === 0 ? (
-                                            <>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.date}
-                                                </GroupCell>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.project}
-                                                </GroupCell>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.stage}
-                                                </GroupCell>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.line}
-                                                </GroupCell>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.shift}
-                                                </GroupCell>
-                                                <GroupCell
-                                                    rowSpan={group.items.length}
-                                                    sx={{ backgroundColor: '#e3f2fd' }}
-                                                >
-                                                    {group.cartonId}
-                                                </GroupCell>
-                                            </>
-                                        ) : null}
-                                        <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.autoUsn}</TableCell>
-                                        <TableCell sx={{ color: item.autoUsn === item.manualUsn ? "green" : "red" }}>{item.manualUsn}</TableCell>
-                                        <TableCell>{item.defectLocation}</TableCell>
-                                        <TableCell>{item.defectSymptoms}</TableCell>
-                                        <TableCell>{item.errCode}</TableCell>
-                                        <TableCell>{item.spec}</TableCell>
-                                        <TableCell>
-                                            {item.defectPic && (
-                                                <img
-                                                    src={item.defectPic}
-                                                    alt="Defect"
-                                                    style={{ maxHeight: '60px' }}
-                                                />
-                                            )}</TableCell>
-                                        <TableCell>{item.actual}</TableCell>
-                                        <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{item.status}</TableCell>
-                                    </StyledTableRow>
-                                ))
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
 
-            {/* MAIN DIALOG */}
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="lg" fullWidth>
-                <DialogTitle>Add New Defect</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <TextField
-                                fullWidth
-                                label="Date"
-                                value={getTodayDate()}
-                                disabled
-                                variant="outlined"
-                                margin="dense"
-                            />
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Project *</InputLabel>
-                                <Select
-                                    name="project"
-                                    label="Project *"
-                                    value={formData.project}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <MenuItem value="D47">D47</MenuItem>
-                                    <MenuItem value="D48">D48</MenuItem>
-                                    <MenuItem value="D49">D49</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Stage *</InputLabel>
-                                <Select
-                                    name="stage"
-                                    label="Stage *"
-                                    value={formData.stage}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <MenuItem value="QIT">QIT</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Line *</InputLabel>
-                                <Select
-                                    name="line"
-                                    label="Line *"
-                                    value={formData.line}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <MenuItem value="L1">L1</MenuItem>
-                                    <MenuItem value="L2">L2</MenuItem>
-                                    <MenuItem value="L3">L3</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Shift *</InputLabel>
-                                <Select
-                                    name="shift"
-                                    label="Shift *"
-                                    value={formData.shift}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <MenuItem value="A Shift">A Shift</MenuItem>
-                                    <MenuItem value="B Shift">B Shift</MenuItem>
-                                    <MenuItem value="C Shift">C Shift</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth margin="dense">
-                                <InputLabel>Carton ID *</InputLabel>
-                                <Select
-                                    name="cartonId"
-                                    label="Carton ID *"
-                                    value={formData.cartonId}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    {Object.keys(cartonToAutoUSNMap).map((cartonId) => (
-                                        <MenuItem key={cartonId} value={cartonId}>{cartonId}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        {formData.cartonId &&
-                            <Grid item size={{ xs: 12, md: 12 }}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    size="large"
+                {/* MAIN DIALOG */}
+                <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="lg" fullWidth>
+                    <DialogTitle>Add New Defect</DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <TextField
                                     fullWidth
-                                    sx={{ display: "flex", justifyContent: "center" }}
-                                    onClick={handleScanDialogOpen}
-                                >
-                                    Scan USN
-                                </Button>
+                                    label="Date"
+                                    value={getTodayDate()}
+                                    disabled
+                                    variant="outlined"
+                                    margin="dense"
+                                />
                             </Grid>
-                        }
-                        <Grid item size={{ xs: 12, md: 12 }}>
-                            {Object.keys(availableAutoUSNs).length > 0 && (
-                                <TableContainer component={Paper} sx={{ mt: 2 }}>
-                                    <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-                                        USN Table
-                                    </Typography>
-                                    <Table size="small" aria-label="auto usn table">
-                                        <TableHead>
-                                            <TableRow>
-                                                <StyledTableCell>Auto USN</StyledTableCell>
-                                                <StyledTableCell>Manual USN</StyledTableCell>
-                                                <StyledTableCell>Defect Location</StyledTableCell>
-                                                <StyledTableCell>Defect Symptoms</StyledTableCell>
-                                                <StyledTableCell>ERR Code</StyledTableCell>
-                                                <StyledTableCell>Spec</StyledTableCell>
-                                                <StyledTableCell>Actual</StyledTableCell>
-                                                <StyledTableCell>Defect Image</StyledTableCell>
-                                                <StyledTableCell>Result</StyledTableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {Object.entries(availableAutoUSNs).map(([usnKey, usnValue]) => (
-                                                <StyledTableRow key={usnKey}>
-                                                    <TableCell sx={{ color: usnValue.matched ? "green" : "" }}>{usnKey}</TableCell>
-                                                    <TableCell sx={{ color: usnValue.matched ? "green" : usnValue.manualUsn === "Not Available" ? "red" : "" }}>
-                                                        {
-                                                            usnValue?.manualUsn ? (
-                                                                usnValue.manualUsn
-                                                            ) : (
-                                                                <Button variant="outlined" color="error" size="small" onClick={() => handleNotAvailable(usnKey)}>
-                                                                    Not available
-                                                                </Button>
-                                                            )
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {usnKey === usnValue.manualUsn &&
-                                                            <>
-                                                                <select
-                                                                    value={usnValue?.defectLocation || ""}
-                                                                    onChange={(e) => handleDefectChange(usnKey, "defectLocation", e.target.value)}
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <FormControl fullWidth margin="dense">
+                                    <InputLabel>Project *</InputLabel>
+                                    <Select
+                                        name="project"
+                                        label="Project *"
+                                        value={formData.project}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <MenuItem value="D47">D47</MenuItem>
+                                        <MenuItem value="D48">D48</MenuItem>
+                                        <MenuItem value="D49">D49</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <FormControl fullWidth margin="dense">
+                                    <InputLabel>Stage *</InputLabel>
+                                    <Select
+                                        name="stage"
+                                        label="Stage *"
+                                        value={formData.stage}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <MenuItem value="QIT">QIT</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <FormControl fullWidth margin="dense">
+                                    <InputLabel>Line *</InputLabel>
+                                    <Select
+                                        name="line"
+                                        label="Line *"
+                                        value={formData.line}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <MenuItem value="L1">L1</MenuItem>
+                                        <MenuItem value="L2">L2</MenuItem>
+                                        <MenuItem value="L3">L3</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <FormControl fullWidth margin="dense">
+                                    <InputLabel>Shift *</InputLabel>
+                                    <Select
+                                        name="shift"
+                                        label="Shift *"
+                                        value={formData.shift}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <MenuItem value="A Shift">A Shift</MenuItem>
+                                        <MenuItem value="B Shift">B Shift</MenuItem>
+                                        <MenuItem value="C Shift">C Shift</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item size={{ xs: 12, md: 6 }}>
+                                <FormControl fullWidth margin="dense">
+                                    <InputLabel>Carton ID *</InputLabel>
+                                    <Select
+                                        name="cartonId"
+                                        label="Carton ID *"
+                                        value={formData.cartonId}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        {Object.keys(cartonToAutoUSNMap).map((cartonId) => (
+                                            <MenuItem key={cartonId} value={cartonId}>{cartonId}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            {formData.cartonId &&
+                                <Grid item size={{ xs: 12, md: 12 }}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        size="large"
+                                        fullWidth
+                                        sx={{ display: "flex", justifyContent: "center" }}
+                                        onClick={handleScanDialogOpen}
+                                        startIcon={<Scanner sx={{ textAlign: "center" }} />}
+                                    >
+                                        Scan USN
+                                    </Button>
+                                </Grid>
+                            }
+                            <Grid item size={{ xs: 12, md: 12 }}>
+                                {Object.keys(availableAutoUSNs).length > 0 && (
+                                    <TableContainer component={Paper} sx={{ mt: 2 }}>
+                                        <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                                            USN Table
+                                        </Typography>
+                                        <Table size="small" aria-label="auto usn table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <StyledTableCell>Auto USN</StyledTableCell>
+                                                    <StyledTableCell>Manual USN</StyledTableCell>
+                                                    <StyledTableCell>Defect Location</StyledTableCell>
+                                                    <StyledTableCell>Defect Symptoms</StyledTableCell>
+                                                    <StyledTableCell>ERR Code</StyledTableCell>
+                                                    <StyledTableCell>Spec</StyledTableCell>
+                                                    <StyledTableCell>Actual</StyledTableCell>
+                                                    <StyledTableCell>Defect Image</StyledTableCell>
+                                                    <StyledTableCell>Result</StyledTableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {Object.entries(availableAutoUSNs).map(([usnKey, usnValue]) => (
+                                                    <StyledTableRow key={usnKey}>
+                                                        <TableCell sx={{ color: usnValue.matched ? "green" : "" }}>{usnKey}</TableCell>
+                                                        <TableCell sx={{ color: usnValue.matched ? "green" : usnValue.manualUsn === "Not Available" ? "red" : "" }}>
+                                                            {
+                                                                usnValue?.manualUsn ? (
+                                                                    usnValue.manualUsn
+                                                                ) : (
+                                                                    <Button variant="outlined" color="error" size="small" onClick={() => handleNotAvailable(usnKey)}>
+                                                                        Not available
+                                                                    </Button>
+                                                                )
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {usnKey === usnValue.manualUsn &&
+                                                                <>
+                                                                    <select
+                                                                        value={usnValue?.defectLocation || ""}
+                                                                        onChange={(e) => handleDefectChange(usnKey, "defectLocation", e.target.value)}
+                                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                                    >
+                                                                        <option value="">Select Defect Location</option>
+                                                                        {DefectLocation.map((location) => (
+                                                                            <option key={location} value={location}>{location}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    {usnValue?.defectLocation === "Other" && (
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Enter Defect Location"
+                                                                            value={usnValue?.customLocation || ""}
+                                                                            onChange={(e) => handleDefectChange(usnKey, "customLocation", e.target.value)}
+                                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                                        />
+                                                                    )}
+                                                                </>
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {usnKey === usnValue.manualUsn &&
+                                                                <>
+                                                                    <select
+                                                                        value={usnValue?.defectSymptoms || ""}
+                                                                        onChange={(e) => handleDefectChange(usnKey, "defectSymptoms", e.target.value)}
+                                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                                    >
+                                                                        <option value="">Select Defect Symptoms</option>
+                                                                        {DefectSymptoms.map((symptom) => (
+                                                                            <option key={symptom} value={symptom}>{symptom}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    {usnValue?.defectSymptoms === "Other" && (
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Enter Defect Symptoms"
+                                                                            value={usnValue?.customSymptoms || ""}
+                                                                            onChange={(e) => handleDefectChange(usnKey, "customSymptoms", e.target.value)}
+                                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                                        />
+                                                                    )}
+                                                                </>
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Enter ERR Code"
+                                                                    value={usnValue?.errCode || ""}
+                                                                    onChange={(e) => handleDefectChange(usnKey, "errCode", e.target.value)}
                                                                     style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                                >
-                                                                    <option value="">Select Defect Location</option>
-                                                                    {DefectLocation.map((location) => (
-                                                                        <option key={location} value={location}>{location}</option>
-                                                                    ))}
-                                                                </select>
-                                                                {usnValue?.defectLocation === "Other" && (
-                                                                    <input
-                                                                        type="text"
-                                                                        placeholder="Enter Defect Location"
-                                                                        value={usnValue?.customLocation || ""}
-                                                                        onChange={(e) => handleDefectChange(usnKey, "customLocation", e.target.value)}
-                                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {usnKey === usnValue.manualUsn &&
-                                                            <>
-                                                                <select
-                                                                    value={usnValue?.defectSymptoms || ""}
-                                                                    onChange={(e) => handleDefectChange(usnKey, "defectSymptoms", e.target.value)}
-                                                                    style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                                >
-                                                                    <option value="">Select Defect Symptoms</option>
-                                                                    {DefectSymptoms.map((symptom) => (
-                                                                        <option key={symptom} value={symptom}>{symptom}</option>
-                                                                    ))}
-                                                                </select>
-                                                                {usnValue?.defectSymptoms === "Other" && (
-                                                                    <input
-                                                                        type="text"
-                                                                        placeholder="Enter Defect Symptoms"
-                                                                        value={usnValue?.customSymptoms || ""}
-                                                                        onChange={(e) => handleDefectChange(usnKey, "customSymptoms", e.target.value)}
-                                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter ERR Code"
-                                                                value={usnValue?.errCode || ""}
-                                                                onChange={(e) => handleDefectChange(usnKey, "errCode", e.target.value)}
-                                                                style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                            />
-                                                        ) : (
-                                                            usnValue?.errCode || ""
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter Spec"
-                                                                value={usnValue?.spec || ""}
-                                                                onChange={(e) => handleDefectChange(usnKey, "spec", e.target.value)}
-                                                                style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                            />
-                                                        ) : (
-                                                            usnValue?.spec || ""
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {usnKey === usnValue.manualUsn &&
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter Actual"
-                                                                value={usnValue?.actual || ""}
-                                                                onChange={(e) => handleDefectChange(usnKey, "actual", e.target.value)}
-                                                                style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                            />
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell align="center" style={{ position: "relative" }}>
-                                                        {usnKey === usnValue.manualUsn ? (
-                                                            usnValue?.image ? (
-                                                                <div style={{ position: "relative", display: "inline-block" }}>
-                                                                    <img
-                                                                        src={usnValue?.image || ""}
-                                                                        alt="Defect"
-                                                                        style={{ maxHeight: "60px", display: "block" }}
-                                                                    />
-                                                                    <SensorOccupiedIcon
-                                                                        sx={{
-                                                                            position: "absolute",
-                                                                            top: 0,
-                                                                            right: 0,
-                                                                            fontSize: "1rem",
-                                                                            color: "purple",
-                                                                            cursor: "pointer",
-                                                                        }}
-                                                                        onClick={() => handleOpenScanner(usnKey)}
-                                                                    />
-                                                                    <DeleteIcon
-                                                                        sx={{
-                                                                            position: "absolute",
-                                                                            top: 0,
-                                                                            left: 0,
-                                                                            fontSize: "1rem",
-                                                                            color: "red",
-                                                                            cursor: "pointer",
-                                                                        }}
-                                                                        onClick={() => handleDeleteCapturedImage(usnKey)}
-                                                                        disabled={!usnValue?.image}
-                                                                    />
-                                                                </div>
-                                                            ) : (
-                                                                <SensorOccupiedIcon
-                                                                    color="secondary"
-                                                                    onClick={usnValue?.result === "OK" ? undefined : () => handleOpenScanner(usnKey)}
-                                                                    sx={{
-                                                                        cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
-                                                                        opacity: usnValue?.result === "OK" ? 0.5 : 1
-                                                                    }}
-                                                                    disabled={usnValue?.result === "OK"}
                                                                 />
-                                                            )
-                                                        ) : null}
-                                                    </TableCell>
-                                                    <TableCell align="center" sx={{ color: usnValue?.result === "OK" ? "green" : "red" }}>
-                                                        {usnValue?.result || ""}
-                                                    </TableCell>
-                                                </StyledTableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            )}
+                                                            ) : (
+                                                                usnValue?.errCode || ""
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Enter Spec"
+                                                                    value={usnValue?.spec || ""}
+                                                                    onChange={(e) => handleDefectChange(usnKey, "spec", e.target.value)}
+                                                                    style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                                />
+                                                            ) : (
+                                                                usnValue?.spec || ""
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {usnKey === usnValue.manualUsn &&
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Enter Actual"
+                                                                    value={usnValue?.actual || ""}
+                                                                    onChange={(e) => handleDefectChange(usnKey, "actual", e.target.value)}
+                                                                    style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                                />
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell align="center" style={{ position: "relative" }}>
+                                                            {usnKey === usnValue.manualUsn ? (
+                                                                usnValue?.image ? (
+                                                                    <div style={{ position: "relative", display: "inline-block" }}>
+                                                                        <img
+                                                                            src={usnValue?.image || ""}
+                                                                            alt="Defect"
+                                                                            style={{ maxHeight: "60px", display: "block" }}
+                                                                        />
+                                                                        <SensorOccupiedIcon
+                                                                            sx={{
+                                                                                position: "absolute",
+                                                                                top: 0,
+                                                                                right: 0,
+                                                                                fontSize: "1rem",
+                                                                                color: "purple",
+                                                                                cursor: "pointer",
+                                                                            }}
+                                                                            onClick={() => handleOpenScanner(usnKey)}
+                                                                        />
+                                                                        <DeleteIcon
+                                                                            sx={{
+                                                                                position: "absolute",
+                                                                                top: 0,
+                                                                                left: 0,
+                                                                                fontSize: "1rem",
+                                                                                color: "red",
+                                                                                cursor: "pointer",
+                                                                            }}
+                                                                            onClick={() => handleDeleteCapturedImage(usnKey)}
+                                                                            disabled={!usnValue?.image}
+                                                                        />
+                                                                    </div>
+                                                                ) : (
+                                                                    <SensorOccupiedIcon
+                                                                        color="secondary"
+                                                                        onClick={usnValue?.result === "OK" ? undefined : () => handleOpenScanner(usnKey)}
+                                                                        sx={{
+                                                                            cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
+                                                                            opacity: usnValue?.result === "OK" ? 0.5 : 1
+                                                                        }}
+                                                                        disabled={usnValue?.result === "OK"}
+                                                                    />
+                                                                )
+                                                            ) : null}
+                                                        </TableCell>
+                                                        <TableCell align="center" sx={{ color: usnValue?.result === "OK" ? "green" : "red" }}>
+                                                            {usnValue?.result || ""}
+                                                        </TableCell>
+                                                    </StyledTableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                )}
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button color="primary" variant="contained"
-                        onClick={handleAddRecord}
-                        disabled={
-                            Object.keys(availableAutoUSNs).length === 0 ||
-                            Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn)
-                        }>
-                        Add Record
-                    </Button>
-                    <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
-                </DialogActions>
-            </Dialog>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button color="primary" variant="contained"
+                            onClick={handleAddRecord}
+                            disabled={
+                                Object.keys(availableAutoUSNs).length === 0 ||
+                                Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn)
+                            }>
+                            Add Record
+                        </Button>
+                        <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* ANALYZE DIALOG */}
-            <Dialog open={scanDialogOpen} onClose={handleScanDialogClose} maxWidth="xs" fullWidth>
-                <DialogTitle>Scan USN</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
-                        <Grid item size={{ xs: 12 }}>
-                            <TextField
-                                label="Manual USN"
-                                value={manualUsn}
-                                onChange={(e) => setManualUsn(e.target.value)}
-                                fullWidth
-                            />
+                {/* ANALYZE DIALOG */}
+                <Dialog open={scanDialogOpen} onClose={handleScanDialogClose} maxWidth="xs" fullWidth>
+                    <DialogTitle>Scan USN</DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2} sx={{ mt: 2 }}>
+                            <Grid item size={{ xs: 12 }}>
+                                <TextField
+                                    label="Manual USN"
+                                    value={manualUsn}
+                                    onChange={(e) => setManualUsn(e.target.value)}
+                                    fullWidth
+                                />
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleScanDialogClose} color="error" variant="contained">Close</Button>
-                    <Button onClick={handleAnalyze} color="primary" variant="contained">Analyze</Button>
-                </DialogActions>
-            </Dialog>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleScanDialogClose} color="error" variant="contained">Close</Button>
+                        <Button onClick={handleAnalyze} color="primary" variant="contained">Analyze</Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* SCANNER DIALOG */}
-            <Dialog open={scannerOpen} onClose={() => setscannerOpen(false)} maxWidth="xs" fullWidth>
-                <DialogTitle>Scanner</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
-                        <Grid item size={{ xs: 12 }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                                {isCameraActive && (
-                                    <Webcam
-                                        audio={false}
-                                        height={200}
-                                        screenshotFormat="image/jpeg"
-                                        width="100%"
-                                        videoConstraints={videoConstraints}
-                                        ref={(webcam) => (window.webcam = webcam)}
+                {/* SCANNER DIALOG */}
+                <Dialog open={scannerOpen} onClose={() => setscannerOpen(false)} maxWidth="xs" fullWidth>
+                    <DialogTitle>Scanner</DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2} sx={{ mt: 2 }}>
+                            <Grid item size={{ xs: 12 }}>
+                                <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    {isCameraActive && (
+                                        <Webcam
+                                            audio={false}
+                                            height={200}
+                                            screenshotFormat="image/jpeg"
+                                            width="100%"
+                                            videoConstraints={videoConstraints}
+                                            ref={(webcam) => (window.webcam = webcam)}
+                                        />
+                                    )}
+                                    {isCameraActive &&
+                                        <FlipCameraAndroidIcon
+                                            onClick={() => setIsFrontCamera((prev) => !prev)}
+                                            sx={{
+                                                position: "absolute",
+                                                top: 8,
+                                                right: 8,
+                                                cursor: "pointer",
+                                                color: "purple",
+                                                fontSize: "1.5rem",
+                                                zIndex: 10,
+                                            }}
+                                        />
+                                    }
+                                </Box>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: { xs: 'column', sm: 'row' },
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                        mt: 2,
+                                    }}
+                                >
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => {
+                                            setIsCameraActive(true);
+                                            const imageSrc = window.webcam?.getScreenshot();
+                                            if (imageSrc) {
+                                                setUploadedImage(imageSrc);
+                                                setIsCameraActive(false);
+                                            }
+                                        }}
+                                        sx={{ flex: 1 }}
+                                    >
+                                        {uploadedImage ? "Capture Again" : "Capture Image"}
+                                    </Button>
+                                </Box>
+                            </Grid>
+                            <Grid item size={{ xs: 12 }}>
+                                {uploadedImage && (
+                                    <img
+                                        src={uploadedImage}
+                                        alt="Uploaded"
+                                        style={{ maxHeight: '200px', marginTop: '10px' }}
                                     />
                                 )}
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: { xs: 'column', sm: 'row' },
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    mt: 2,
-                                }}
-                            >
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => {
-                                        setIsCameraActive(true);
-                                        const imageSrc = window.webcam?.getScreenshot();
-                                        if (imageSrc) {
-                                            setUploadedImage(imageSrc);
-                                            setIsCameraActive(false);
-                                        }
-                                    }}
-                                    sx={{ flex: 1 }}
-                                >
-                                    Capture Image
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={() => setIsFrontCamera((prev) => !prev)}
-                                    sx={{ flex: 1 }}
-                                    disabled={!isCameraActive}
-                                >
-                                    Switch Camera
-                                </Button>
-                            </Box>
+                            </Grid>
                         </Grid>
-                        <Grid item size={{ xs: 12 }}>
-                            {uploadedImage && (
-                                <img
-                                    src={uploadedImage}
-                                    alt="Uploaded"
-                                    style={{ maxHeight: '200px', marginTop: '10px' }}
-                                />
-                            )}
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        onClick={() => {
-                            setscannerOpen(false);
-                            setIsCameraActive(false);
-                            setUploadedImage(null);
-                        }}
-                        color="error"
-                        variant="contained"
-                    >
-                        Close
-                    </Button>
-                    <Button onClick={handleSaveCapturedImage} color="primary" variant="contained">
-                        Save
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => {
+                                setscannerOpen(false);
+                                setIsCameraActive(false);
+                                setUploadedImage(null);
+                            }}
+                            color="error"
+                            variant="contained"
+                        >
+                            Close
+                        </Button>
+                        <Button onClick={handleSaveCapturedImage} color="primary" variant="contained">
+                            Save
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
-            {/* SNACKBAR */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </Container>
+                {/* SNACKBAR */}
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={handleSnackbarClose}
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                >
+                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
+            </Container>
+        </>
     )
 }
 
