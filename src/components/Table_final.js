@@ -149,6 +149,11 @@ const TableTracking2 = () => {
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [scannerOpen, setscannerOpen] = useState(false);
     const [currentUsnKey, setCurrentUsnKey] = useState(null);
+    const [stageFilter, setStageFilter] = useState("All");
+
+    const filteredData = stageFilter === "All"
+        ? groupedData
+        : groupedData.filter(group => group.stage === stageFilter);
 
     const videoConstraints = {
         width: 1280,
@@ -389,7 +394,7 @@ const TableTracking2 = () => {
                     spec: "-",
                     actual: "-",
                     image: null,
-                    result: "-",
+                    result: "",
                     notAvailable: true,
                     manualUsn: "Not Available",
                     containtment: "-",
@@ -567,18 +572,66 @@ const TableTracking2 = () => {
             <Navbar />
             <Container maxWidth={"false"}>
                 <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2, mb: 3 }}>
-                    <Box sx={{ mb: 2, alignItems: 'center', display: "flex", justifyContent: "center" }}>
-                        <Typography variant="h5" component="h2" sx={{ textAlign: "center", flex: 1 }}>
+                    <Box sx={{
+                        mb: 2,
+                        display: "flex",
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: "center",
+                        gap: 2 
+                    }}>
+                        <Typography
+                            variant="h5"
+                            component="h2"
+                            sx={{
+                                textAlign: "center",
+                                flexGrow: 1,
+                                order: { xs: 1, sm: 2 }, // Center on mobile, middle on desktop
+                                width: { xs: '100%', sm: 'auto' } // Full width on mobile
+                            }}
+                        >
                             QIT - Digitalization
                         </Typography>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            sx={{ marginLeft: 'auto', display: "flex", justifyContent: "flex-end" }}
-                            onClick={handleDialogOpen}
-                        >
-                            New Defect
-                        </Button>
+
+                        <Box sx={{
+                            display: 'flex',
+                            gap: 2,
+                            width: { xs: '100%', sm: 'auto' },
+                            order: { xs: 3, sm: 1 },
+                            marginTop:2
+                        }}>
+                            <FormControl size="small" sx={{ minWidth: 200, flexGrow: { xs: 1, sm: 0 } }}>
+                                <InputLabel>Filter by Stage</InputLabel>
+                                <Select
+                                    value={stageFilter}
+                                    onChange={(e) => setStageFilter(e.target.value)}
+                                    label="Filter by Stage"
+                                >
+                                    <MenuItem value="All">All</MenuItem>
+                                    <MenuItem value="CM QIT">CM QIT</MenuItem>
+                                    <MenuItem value="NOVA QIT">NOVA QIT</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                        <Box sx={{
+                            order: { xs: 2, sm: 3 },
+                            width: { xs: '100%', sm: 'auto' },
+                            display: 'flex',
+                            justifyContent: { xs: 'flex-end', sm: 'flex-start' }
+                        }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleDialogOpen}
+                                fullWidth={false}
+                                sx={{
+                                    whiteSpace: 'nowrap',
+                                    width: { xs: '100%', sm: 'auto' } // Full width on mobile
+                                }}
+                            >
+                                New Defect
+                            </Button>
+                        </Box>
                     </Box>
                     <TableContainer component={Paper}>
                         <Table size="small" aria-label="defect table">
@@ -586,7 +639,7 @@ const TableTracking2 = () => {
                                 <TableRow>
                                     <StyledTableCell>Date</StyledTableCell>
                                     <StyledTableCell>Project</StyledTableCell>
-                                    <StyledTableCell>Stage</StyledTableCell>
+                                    <StyledTableCell>Station</StyledTableCell>
                                     <StyledTableCell>Line</StyledTableCell>
                                     <StyledTableCell>Shift</StyledTableCell>
                                     <StyledTableCell>Carton ID</StyledTableCell>
@@ -609,7 +662,7 @@ const TableTracking2 = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {groupedData.map((group, groupIndex) => (
+                                {filteredData.map((group, groupIndex) => (
                                     group.autoUsnGroups.map((autoUsnGroup, autoUsnIndex) => (
                                         autoUsnGroup.manualUsnGroups.map((manualUsnGroup, manualUsnIndex) => (
                                             manualUsnGroup.items.map((item, itemIndex) => (
@@ -719,15 +772,16 @@ const TableTracking2 = () => {
                             </Grid>
                             <Grid item size={{ xs: 12, md: 6 }}>
                                 <FormControl fullWidth margin="dense">
-                                    <InputLabel>Stage *</InputLabel>
+                                    <InputLabel>Station *</InputLabel>
                                     <Select
                                         name="stage"
-                                        label="Stage *"
+                                        label="Station *"
                                         value={formData.stage}
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <MenuItem value="CM QIT / NOVA QIT"> CM QIT / NOVA QIT</MenuItem>
+                                        <MenuItem value="CM QIT"> CM QIT </MenuItem>
+                                        <MenuItem value="NOVA QIT"> NOVA QIT</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
@@ -983,15 +1037,18 @@ const TableTracking2 = () => {
                                                                 )
                                                             ) : null}
                                                         </TableCell>
-                                                        <TableCell align="center" sx={{ color: usnValue?.result === "OK" ? "green" : "red" }}>
-                                                            {usnValue?.result || ""}
-                                                            {usnValue.autousn === usnValue.manualUsn && (
-                                                                <PlusIcon
-                                                                    color="primary"
-                                                                    sx={{ cursor: "pointer" }}
-                                                                    onClick={() => handleAddRowBelow(usnKey, usnValue.autousn, usnValue.manualUsn)}
-                                                                />
-                                                            )
+                                                        <TableCell align="center">
+                                                            {usnValue?.result &&
+                                                                <select
+                                                                    value={usnValue?.result || ""}
+                                                                    onChange={(e) => handleDefectChange(usnKey, "result", e.target.value)}
+                                                                    style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", color: usnValue?.result === "OK" ? "green" : usnValue?.result === "NG" ? "red" : "" }}
+                                                                >
+                                                                    <option value="">Select Defect Result</option>
+                                                                    {["OK", "NG", "Observing"].map((symptom) => (
+                                                                        <option key={symptom} value={symptom}>{symptom}</option>
+                                                                    ))}
+                                                                </select>
                                                             }
                                                         </TableCell>
                                                         <TableCell>
@@ -1051,18 +1108,30 @@ const TableTracking2 = () => {
                                                         </TableCell>
                                                         <TableCell>
                                                             {usnValue.autousn === usnValue.manualUsn &&
-                                                                <select
-                                                                    value={usnValue?.result_final || ""}
-                                                                    onChange={(e) => handleDefectChange(usnKey, "result_final", e.target.value)}
-                                                                    style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                                >
-                                                                    <option value="">Select Defect Result</option>
-                                                                    {["on going", "monitoring", "closed"].map((symptom) => (
-                                                                        <option key={symptom} value={symptom}>{symptom}</option>
-                                                                    ))}
-                                                                </select>
+                                                                <>
+                                                                    <select
+                                                                        value={usnValue?.result_final || ""}
+                                                                        onChange={(e) => handleDefectChange(usnKey, "result_final", e.target.value)}
+                                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                                    >
+                                                                        <option value="">Select Defect Result</option>
+                                                                        {["On going", "Monitoring", "Closed"].map((symptom) => (
+                                                                            <option key={symptom} value={symptom}>{symptom}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </>
                                                             }
                                                         </TableCell>
+                                                        {usnValue.autousn === usnValue.manualUsn && (
+                                                            <TableCell>
+                                                                <PlusIcon
+                                                                    color="primary"
+                                                                    sx={{ cursor: "pointer" }}
+                                                                    onClick={() => handleAddRowBelow(usnKey, usnValue.autousn, usnValue.manualUsn)}
+                                                                />
+                                                            </TableCell>
+                                                        )
+                                                        }
                                                     </StyledTableRow>
                                                 ))}
                                             </TableBody>
@@ -1232,7 +1301,7 @@ const TableTracking2 = () => {
                         {snackbarMessage}
                     </Alert>
                 </Snackbar>
-            </Container>
+            </Container >
         </>
     )
 
