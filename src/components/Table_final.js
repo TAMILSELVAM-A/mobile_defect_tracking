@@ -600,11 +600,11 @@ const TableTracking2 = () => {
                             marginTop:2
                         }}>
                             <FormControl size="small" sx={{ minWidth: 200, flexGrow: { xs: 1, sm: 0 } }}>
-                                <InputLabel>Filter by Stage</InputLabel>
+                                <InputLabel>Filter by Station</InputLabel>
                                 <Select
                                     value={stageFilter}
                                     onChange={(e) => setStageFilter(e.target.value)}
-                                    label="Filter by Stage"
+                                    label="Filter by Station"
                                 >
                                     <MenuItem value="All">All</MenuItem>
                                     <MenuItem value="CM QIT">CM QIT</MenuItem>
