@@ -312,7 +312,6 @@ const TrackingTable = () => {
 
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
                 setData(jsonData);
-                console.log("Excel Data Loaded:", jsonData);
 
                 processDataForGrouping(jsonData);
             } catch (error) {
@@ -361,7 +360,6 @@ const TrackingTable = () => {
                 updatedDetails[usnKey].notAvailable = true;
                 updatedDetails[usnKey].manualUsn = "Not Available";
             }
-            console.log("UpdatedDetails", updatedDetails)
             return updatedDetails;
         });
     }
@@ -378,7 +376,6 @@ const TrackingTable = () => {
                     updatedDetails[currentUsnKey] = {};
                 }
                 updatedDetails[currentUsnKey].image = uploadedImage;
-                console.log("UpdatedDetails", updatedDetails)
                 return updatedDetails;
             });
             setscannerOpen(false);
