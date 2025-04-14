@@ -898,7 +898,7 @@ const TableTracking2 = () => {
                                                                     style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                                 >
                                                                     <option value="">Select Category</option>
-                                                                    {["category 1", "category 2", "category 3"].map((symptom) => (
+                                                                    {["Category 1", "Category 2", "Category 3"].map((symptom) => (
                                                                         <option key={symptom} value={symptom}>{symptom}</option>
                                                                     ))}
                                                                 </select>
