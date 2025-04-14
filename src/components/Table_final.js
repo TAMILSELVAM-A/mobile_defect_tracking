@@ -1111,7 +1111,7 @@ const TableTracking2 = () => {
                     <DialogTitle>Scanner</DialogTitle>
                     <DialogContent>
                         <Grid container spacing={2} sx={{ mt: 2 }}>
-                            <Grid item size={{ xs: 12, md: 12 }}>
+                            <Grid item size={{ xs: 12, md: 12 }} sx={{ position: 'relative' }}>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                                     {/* Render Webcam only if isCameraActive is true */}
                                     {isCameraActive && (
@@ -1124,6 +1124,22 @@ const TableTracking2 = () => {
                                             ref={(webcam) => (window.webcam = webcam)}
                                         />
                                     )}
+                                    {isCameraActive &&
+                                        <FlipCameraAndroidIcon
+                                            onClick={() => setIsFrontCamera((prev) => !prev)}
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 10,
+                                                right: 10,
+                                                fontSize: '2rem',
+                                                color: 'white',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                                borderRadius: '50%',
+                                                padding: '5px',
+                                                cursor: 'pointer',
+                                            }}
+                                        />
+                                    }
                                 </Box>
                                 <Box
                                     sx={{
@@ -1152,15 +1168,6 @@ const TableTracking2 = () => {
                                     </Button>
                                     <Button
                                         variant="contained"
-                                        color="secondary"
-                                        onClick={() => setIsFrontCamera((prev) => !prev)}
-                                        sx={{ flex: 1 }}
-                                        disabled={!isCameraActive} // Disable if the camera is not active
-                                    >
-                                        Switch Camera
-                                    </Button>
-                                    <Button
-                                        variant="contained"
                                         component="label"
                                         color="secondary"
                                         sx={{ flex: 1 }}
@@ -1176,6 +1183,7 @@ const TableTracking2 = () => {
                                                     const reader = new FileReader();
                                                     reader.onload = (event) => {
                                                         setUploadedImage(event.target.result);
+                                                        setIsCameraActive(false); // Deactivate the camera after uploading
                                                     };
                                                     reader.readAsDataURL(file);
                                                 }
