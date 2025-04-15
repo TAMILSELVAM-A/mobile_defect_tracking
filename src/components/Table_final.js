@@ -555,6 +555,7 @@ const TableTracking2 = () => {
                 four_m: "",
                 ETC: "",
                 result_final: "",
+                additionalDefectRow: true,
             };
 
             if (updatedDetails[usnKey]) {
@@ -879,8 +880,8 @@ const TableTracking2 = () => {
                                             <TableBody>
                                                 {Object.entries(availableAutoUSNs).map(([usnKey, usnValue]) => (
                                                     <StyledTableRow key={usnKey}>
-                                                        <TableCell sx={{ color: usnValue.matched ? "green" : "" }}>{usnValue.autousn}</TableCell>
-                                                        <TableCell sx={{ color: usnValue.matched ? "green" : usnValue.manualUsn === "Not Available" ? "red" : "" }}>
+                                                        <TableCell sx={{ color: usnValue.matched ? "green" : usnValue?.additionalDefectRow ? "lightgreen" : "" }}>{usnValue.autousn}</TableCell>
+                                                        <TableCell sx={{ color: usnValue.matched ? "green" : usnValue.manualUsn === "Not Available" ? "red" : usnValue?.additionalDefectRow ? "lightgreen" : "" }}>
                                                             {
                                                                 usnValue?.manualUsn ? (
                                                                     usnValue.manualUsn
