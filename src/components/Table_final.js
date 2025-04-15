@@ -409,25 +409,25 @@ const TableTracking2 = () => {
         });
     };
 
-    const handleSaveCapturedImage = () => {
-        if (uploadedImage === null || currentUsnKey === null) {
-            showSnackbar("Please capture an image", "error")
-            return
-        }
-        if (uploadedImage && currentUsnKey) {
-            setAvailableAutoUSNs((prevDetails) => {
-                const updatedDetails = { ...prevDetails };
-                if (!updatedDetails[currentUsnKey]) {
-                    updatedDetails[currentUsnKey] = {};
-                }
-                updatedDetails[currentUsnKey].image = uploadedImage;
-                return updatedDetails;
-            });
-            setscannerOpen(false);
-            setUploadedImage(null);
-            setCurrentUsnKey(null);
-        }
-    };
+    // const handleSaveCapturedImage = () => {
+    //     if (uploadedImage === null || currentUsnKey === null) {
+    //         showSnackbar("Please capture an image", "error")
+    //         return
+    //     }
+    //     if (uploadedImage && currentUsnKey) {
+    //         setAvailableAutoUSNs((prevDetails) => {
+    //             const updatedDetails = { ...prevDetails };
+    //             if (!updatedDetails[currentUsnKey]) {
+    //                 updatedDetails[currentUsnKey] = {};
+    //             }
+    //             updatedDetails[currentUsnKey].image = uploadedImage;
+    //             return updatedDetails;
+    //         });
+    //         setscannerOpen(false);
+    //         setUploadedImage(null);
+    //         setCurrentUsnKey(null);
+    //     }
+    // };
 
     const handleDeleteCapturedImage = (usnKey) => {
         setAvailableAutoUSNs((prevDetails) => {
@@ -447,18 +447,18 @@ const TableTracking2 = () => {
         const day = String(today.getDate()).padStart(2, '0');
         const year = today.getFullYear();
 
-        let hours = today.getHours();
-        const minutes = String(today.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
+        // let hours = today.getHours();
+        // const minutes = String(today.getMinutes()).padStart(2, '0');
+        // const ampm = hours >= 12 ? 'PM' : 'AM';
 
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const formattedHours = String(hours).padStart(2, '0');
+        // hours = hours % 12;
+        // hours = hours ? hours : 12;
+        // const formattedHours = String(hours).padStart(2, '0');
 
         const date = `${year}-${month}-${day}`;
-        const time = `${formattedHours}:${minutes} ${ampm}`;
+        // const time = `${formattedHours}:${minutes} ${ampm}`;
 
-        return `${date} ${time}`;
+        return `${date}`;
     };
 
     const handleScanDialogOpen = () => {
@@ -577,7 +577,7 @@ const TableTracking2 = () => {
                         display: "flex",
                         flexDirection: { xs: 'column', sm: 'row' },
                         alignItems: "center",
-                        gap: 2 
+                        gap: 2
                     }}>
                         <Typography
                             variant="h5"
@@ -597,7 +597,7 @@ const TableTracking2 = () => {
                             gap: 2,
                             width: { xs: '100%', sm: 'auto' },
                             order: { xs: 3, sm: 1 },
-                            marginTop:2
+                            marginTop: 2
                         }}>
                             <FormControl size="small" sx={{ minWidth: 200, flexGrow: { xs: 1, sm: 0 } }}>
                                 <InputLabel>Filter by Station</InputLabel>
@@ -817,7 +817,7 @@ const TableTracking2 = () => {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid item size={{ xs: 12, md: 6 }}>
+                            <Grid item size={{ xs: 6, md: 5 }}>
                                 <FormControl fullWidth margin="dense">
                                     <InputLabel>Carton ID *</InputLabel>
                                     <Select
@@ -833,21 +833,22 @@ const TableTracking2 = () => {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            {formData.cartonId &&
-                                <Grid item size={{ xs: 12, md: 12 }}>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        size="large"
-                                        fullWidth
-                                        sx={{ display: "flex", justifyContent: "center" }}
-                                        onClick={handleScanDialogOpen}
-                                        startIcon={<Scanner sx={{ textAlign: "center" }} />}
-                                    >
-                                        Scan USN
-                                    </Button>
-                                </Grid>
-                            }
+                            <Grid item size={{ xs: 6, md: 1 }} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="small"
+                                    onClick={handleScanDialogOpen}
+                                    startIcon={<Scanner sx={{ textAlign: "center" }} />}
+                                    disabled={!formData.cartonId}
+                                    sx={{
+                                        textAlign: 'center',
+                                    }}
+                                    fullWidth
+                                >
+                                    Scan USN
+                                </Button>
+                            </Grid>
                             <Grid item size={{ xs: 12, md: 12 }}>
                                 {Object.keys(availableAutoUSNs).length > 0 && (
                                     <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -1044,7 +1045,7 @@ const TableTracking2 = () => {
                                                                     onChange={(e) => handleDefectChange(usnKey, "result", e.target.value)}
                                                                     style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", color: usnValue?.result === "OK" ? "green" : usnValue?.result === "NG" ? "red" : "" }}
                                                                 >
-                                                                    <option value="">Select Defect Result</option>
+                                                                    <option value="-">Select Defect Result</option>
                                                                     {["OK", "NG", "Observing"].map((symptom) => (
                                                                         <option key={symptom} value={symptom}>{symptom}</option>
                                                                     ))}
@@ -1193,9 +1194,12 @@ const TableTracking2 = () => {
                                             ref={(webcam) => (window.webcam = webcam)}
                                         />
                                     )}
-                                    {isCameraActive &&
+                                    {isCameraActive && (
                                         <FlipCameraAndroidIcon
-                                            onClick={() => setIsFrontCamera((prev) => !prev)}
+                                            onClick={() => {
+                                                setIsFrontCamera((prev) => !prev);
+                                                setUploadedImage(null);
+                                            }}
                                             sx={{
                                                 position: 'absolute',
                                                 top: 10,
@@ -1208,7 +1212,7 @@ const TableTracking2 = () => {
                                                 cursor: 'pointer',
                                             }}
                                         />
-                                    }
+                                    )}
                                 </Box>
                                 <Box
                                     sx={{
@@ -1228,7 +1232,16 @@ const TableTracking2 = () => {
                                             const imageSrc = window.webcam?.getScreenshot();
                                             if (imageSrc) {
                                                 setUploadedImage(imageSrc);
+                                                setAvailableAutoUSNs((prevDetails) => {
+                                                    const updatedDetails = { ...prevDetails };
+                                                    if (!updatedDetails[currentUsnKey]) {
+                                                        updatedDetails[currentUsnKey] = {};
+                                                    }
+                                                    updatedDetails[currentUsnKey].image = imageSrc;
+                                                    return updatedDetails;
+                                                });
                                                 setIsCameraActive(false); // Deactivate the camera after capturing
+                                                setscannerOpen(false); // Close the dialog
                                             }
                                         }}
                                         sx={{ flex: 1 }}
@@ -1251,8 +1264,17 @@ const TableTracking2 = () => {
                                                 if (file) {
                                                     const reader = new FileReader();
                                                     reader.onload = (event) => {
-                                                        setUploadedImage(event.target.result);
-                                                        setIsCameraActive(false); // Deactivate the camera after uploading
+                                                        const uploadedImageSrc = event.target.result;
+                                                        setUploadedImage(uploadedImageSrc);
+                                                        setAvailableAutoUSNs((prevDetails) => {
+                                                            const updatedDetails = { ...prevDetails };
+                                                            if (!updatedDetails[currentUsnKey]) {
+                                                                updatedDetails[currentUsnKey] = {};
+                                                            }
+                                                            updatedDetails[currentUsnKey].image = uploadedImageSrc;
+                                                            return updatedDetails;
+                                                        });
+                                                        setscannerOpen(false); // Close the dialog
                                                     };
                                                     reader.readAsDataURL(file);
                                                 }
@@ -1266,7 +1288,7 @@ const TableTracking2 = () => {
                                     <img
                                         src={uploadedImage}
                                         alt="Uploaded"
-                                        style={{ maxHeight: '200px', marginTop: '10px' }}
+                                        style={{ maxHeight: '200px', marginTop: '10px', width: '100%', border: "1px solid black" }}
                                     />
                                 )}
                             </Grid>
@@ -1282,11 +1304,18 @@ const TableTracking2 = () => {
                             color="error"
                             variant="contained"
                         >
-                            Close
+                            Cancel
                         </Button>
-                        <Button onClick={handleSaveCapturedImage} color="primary" variant="contained">
-                            Save
-                        </Button>
+                        {/* <Button
+                            onClick={() => {
+                                setUploadedImage(null);
+                                setIsCameraActive(true); // Reactivate the camera for capturing again
+                            }}
+                            color="primary"
+                            variant="contained"
+                        >
+                            Capture Again
+                        </Button> */}
                     </DialogActions>
                 </Dialog>
 
