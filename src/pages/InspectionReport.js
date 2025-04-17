@@ -17,7 +17,11 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Button,
 } from "@mui/material";
+import axios from "axios";
+import { Home } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
@@ -46,7 +50,8 @@ const InspectionReport = () => {
     const [groupedData, setGroupedData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stageFilter, setStageFilter] = useState("All");
-    
+    const navigate = useNavigate();
+
     const filteredData = stageFilter === "All"
         ? groupedData
         : groupedData.filter(group => group.stage === stageFilter);
@@ -73,7 +78,7 @@ const InspectionReport = () => {
         const groupedByKeys = {};
 
         jsonData.forEach(row => {
-            const date = formatExcelDate(row["Inspection Date"]);
+            const date = row["Inspection Date"];
             const line = row["Line"];
             const stage = row["Stage"];
             const shift = row["Shift"];
@@ -113,12 +118,13 @@ const InspectionReport = () => {
                 defectPic: row["Defect Image"],
                 actual: row["Actual"],
                 status: row["Result"],
-                containtment: row["Containment Action"],
-                root_cause: row["Root Cause"],
+                containtment: row["Containment Action "],
+                root_cause: row["Root cause"],
                 corect_to_cause: row["Correct to action"],
                 four_m: row["4M"],
                 ETC: row["ETC"],
                 result_final: row["Result Final"],
+                limit_sample_image: row["Limit Sample Images"]
             });
         });
 
@@ -140,23 +146,10 @@ const InspectionReport = () => {
         const fetchExcelFile = async () => {
             setLoading(true);
             try {
-                const response = await fetch("Updated%20OQC%20QIT%20Automation.xlsx");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const res = await axios.get("https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa");
+                setData(res.data);
 
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                const worksheet = workbook.Sheets["Sheet2"];
-
-                if (!worksheet) {
-                    throw new Error("Sheet 'Sheet2' not found in workbook.");
-                }
-
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-                setData(jsonData);
-
-                processDataForGrouping(jsonData);
+                processDataForGrouping(res.data);
             } catch (error) {
                 console.error("Error fetching or parsing Excel file:", error);
             } finally {
@@ -166,6 +159,7 @@ const InspectionReport = () => {
 
         fetchExcelFile();
     }, [processDataForGrouping]);
+
 
     if (loading) {
         return (
@@ -182,34 +176,30 @@ const InspectionReport = () => {
     return (
         <Container maxWidth={"false"}>
             <Box sx={{ width: '100%', position: 'relative', overflow: 'auto', mt: 2, mb: 3 }}>
-                <Box sx={{
-                    mb: 2,
-                    display: "flex",
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    alignItems: "center",
-                    gap: 2
-                }}>
-                    <Typography
-                        variant="h5"
-                        component="h2"
+                <Box
+                    sx={{
+                        mt: 1,
+                        mb:2,
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: "center",
+                        justifyContent: "space-between", // Ensures proper spacing between items
+                        gap: 2,
+                    }}
+                >
+                    {/* Filter Box */}
+                    <Box
                         sx={{
-                            textAlign: "center",
-                            flexGrow: 1,
-                            order: { xs: 1, sm: 2 },
-                            width: { xs: '100%', sm: 'auto' } // Full width on mobile
+                            display: "flex",
+                            gap: 2,
+                            width: { xs: "100%", sm: "auto" },
+                            order: { xs: 1, sm: 1 }, // Ensure filter is first
                         }}
                     >
-                        QIT - Digitalization
-                    </Typography>
-
-                    <Box sx={{
-                        display: 'flex',
-                        gap: 2,
-                        width: { xs: '100%', sm: 'auto' },
-                        order: { xs: 3, sm: 1 },
-                        marginTop: 2
-                    }}>
-                        <FormControl size="small" sx={{ minWidth: 200, flexGrow: { xs: 1, sm: 0 } }}>
+                        <FormControl
+                            size="small"
+                            sx={{ minWidth: 200, flexGrow: { xs: 1, sm: 0 } }}
+                        >
                             <InputLabel>Filter by Station</InputLabel>
                             <Select
                                 value={stageFilter}
@@ -221,6 +211,40 @@ const InspectionReport = () => {
                                 <MenuItem value="NOVA QIT">NOVA QIT</MenuItem>
                             </Select>
                         </FormControl>
+                    </Box>
+
+                    {/* Title */}
+                    <Typography
+                        variant="h5"
+                        component="h2"
+                        sx={{
+                            textAlign: "center",
+                            flexGrow: 1,
+                            order: { xs: 2, sm: 2 }, // Ensure title is centered
+                            width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                        }}
+                    >
+                        QIT - Digitalization
+                    </Typography>
+
+                    {/* Home Button */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            order: { xs: 3, sm: 3 }, // Ensure button is last
+                            width: { xs: "100%", sm: "auto" },
+                        }}
+                    >
+                        <Button
+                            startIcon={<Home />}
+                            variant="contained"
+                            onClick={() => {
+                                navigate("/home");
+                            }}
+                        >
+                            Home
+                        </Button>
                     </Box>
                 </Box>
                 <TableContainer component={Paper}>
@@ -238,6 +262,7 @@ const InspectionReport = () => {
                                 <StyledTableCell>Category</StyledTableCell>
                                 <StyledTableCell>Defect Location</StyledTableCell>
                                 <StyledTableCell>Defect Symptoms</StyledTableCell>
+                                <StyledTableCell>Limit Sample Images</StyledTableCell>
                                 <StyledTableCell>ERR Code</StyledTableCell>
                                 <StyledTableCell>Spec</StyledTableCell>
                                 <StyledTableCell>Defect Pic</StyledTableCell>
@@ -302,16 +327,23 @@ const InspectionReport = () => {
                                                 <TableCell>{item.category}</TableCell>
                                                 <TableCell>{item.defectLocation}</TableCell>
                                                 <TableCell>{item.defectSymptoms}</TableCell>
+                                                <TableCell>{item.limit_sample_image && (
+                                                    <img
+                                                        src={item.limit_sample_image}
+                                                        alt="Defect"
+                                                        style={{ maxHeight: '60px' }}
+                                                    />
+                                                )}</TableCell>
                                                 <TableCell>{item.errCode}</TableCell>
                                                 <TableCell>{item.spec}</TableCell>
                                                 <TableCell>
-                                                    {item.defectPic && (
+                                                    {item.defectPic ? (
                                                         <img
                                                             src={item.defectPic}
                                                             alt="Defect"
                                                             style={{ maxHeight: '60px' }}
                                                         />
-                                                    )}
+                                                    ) : ("-")}
                                                 </TableCell>
                                                 <TableCell>{item.actual}</TableCell>
                                                 <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{item.status}</TableCell>

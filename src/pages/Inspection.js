@@ -24,6 +24,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    CircularProgress
 } from "@mui/material";
 import Webcam from "react-webcam";
 import SensorOccupiedIcon from '@mui/icons-material/SensorOccupied';
@@ -31,6 +32,9 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import FlipCameraAndroidIcon from '@mui/icons-material/FlipCameraAndroid';
 import Scanner from '@mui/icons-material/DocumentScanner';
 import PlusIcon from '@mui/icons-material/Add';
+import axios from "axios";
+import { Home } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: '#64b5f6',
@@ -134,6 +138,8 @@ const Inspection = () => {
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [scannerOpen, setscannerOpen] = useState(false);
     const [currentUsnKey, setCurrentUsnKey] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
 
 
     const videoConstraints = {
@@ -307,7 +313,7 @@ const Inspection = () => {
         setScanDialogOpen(false);
     };
 
-    const handleAddRecord = () => {
+    const handleAddRecord = async () => {
         const { project, stage, line, shift, cartonId } = formData;
         if (!project || !stage || !line || !shift || !cartonId) {
             showSnackbar("Please fill in all required fields.", "warning");
@@ -333,34 +339,39 @@ const Inspection = () => {
             "Defect Image": usnData.image || null,
             Actual: usnData.actual || "-",
             Result: usnData.result || "-",
-            "Containment Action": usnData.containtment || "-",
-            "Root Cause": usnData.root_cause || "-",
+            "Containment Action ": usnData.containtment || "-",
+            "Root cause": usnData.root_cause || "-",
             "Correct to action": usnData.corect_to_cause || "-",
             "4M": usnData.four_m || "-",
             ETC: usnData.ETC || "-",
             "Result Final": usnData.result_final || "-",
         }));
 
-
-        fetch("https://script.google.com/macros/s/AKfycbwQQ2X7-OuTipfV7h47pAP0tjJtUVIZFSprzkJxKzspxiw2Mpqv--adqd7lwR5W9z1XWw/exec", 
-            {
-            method: "POST",
-            body: JSON.stringify(newRecords),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then(response => response.text())
-            .then(result => {
-                console.log(result);
-                showSnackbar("Records added successfully!", "success");
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                showSnackbar("Failed to add records.", "error");
+        try {
+            setLoading(true);
+            for (const record of newRecords) {
+                await axios.post("https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa", record);
+            }
+            showSnackbar("Records added successfully!", "success");
+            setAvailableAutoUSNs({});
+            setFormData({
+                project: "",
+                stage: "",
+                line: "",
+                shift: "",
+                cartonId: "",
             });
-
+            setManualUsn("");
+        } catch (error) {
+            console.error("Error:", error);
+            showSnackbar("Failed to add some or all records.", "error");
+            setLoading(false)
+        }
+        finally {
+            setLoading(false)
+        }
     };
+
 
     const handleAddRowBelow = (usnKey, autousn, manualusn) => {
         setAvailableAutoUSNs((prevDetails) => {
@@ -398,9 +409,14 @@ const Inspection = () => {
 
     return (
         <Container maxWidth={"false"}>
-            <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
-                Inspection
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center",justifyContent:"space-between" }}>
+                <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
+                    Inspection
+                </Typography>
+                <Button startIcon={<Home/>} variant="contained" onClick={()=>{navigate("/home")}}>
+                    Home
+                </Button>
+            </Box>
             <Box sx={{ padding: 2, border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#f9f9f9" }}>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                     <Grid item size={{ xs: 12, md: 6 }}>
@@ -805,14 +821,18 @@ const Inspection = () => {
                 </Grid>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: "center", mt: 2, mb: 3 }}>
-                <Button color="primary" variant="contained"
-                    onClick={handleAddRecord}
-                    disabled={
-                        Object.keys(availableAutoUSNs).length === 0 ||
-                        Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn)
-                    }>
-                    Add Record
-                </Button>
+                {loading ? (
+                    <CircularProgress size={24} color="primary" />
+                ) :
+                    <Button color="primary" variant="contained"
+                        onClick={handleAddRecord}
+                        disabled={
+                            Object.keys(availableAutoUSNs).length === 0 ||
+                            Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn)
+                        }>
+                        Add Record
+                    </Button>
+                }
             </Box>
 
             {/* ANALYZE DIALOG */}

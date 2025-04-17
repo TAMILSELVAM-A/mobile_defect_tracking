@@ -24,13 +24,13 @@ const App = () => {
           }
         />
         <Route
-          path="/InspectionReport"
+          path="/inspection_report"
           element={
             <InspectionReport />
           }
         />
         <Route
-          path="/QIT-Dashboard"
+          path="/home"
           element={
             <Home />
           }
