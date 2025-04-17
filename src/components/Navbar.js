@@ -1,45 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     AppBar,
     Toolbar,
     Box,
-    Typography,
-    IconButton,
-    Menu,
-    MenuItem,
-    useMediaQuery,
-    useTheme
+    Typography
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
-import MenuIcon from "@mui/icons-material/Menu";
-import HomeIcon from "@mui/icons-material/Home";
-import DescriptionIcon from "@mui/icons-material/Description";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleLogout = () => {
         navigate("/");
     };
 
-    const handleMenuClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
 
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleNavigation = (path) => {
-        navigate(path);
-        handleMenuClose();
-    };
 
     const isLoggedIn = location.pathname !== "/" && location.pathname !== "/login";
 

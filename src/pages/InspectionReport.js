@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import * as XLSX from "xlsx";
 import {
     Table,
     TableBody,
@@ -56,22 +55,22 @@ const InspectionReport = () => {
         ? groupedData
         : groupedData.filter(group => group.stage === stageFilter);
 
-    const formatExcelDate = (excelDate) => {
-        if (typeof excelDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
-            return excelDate;
-        }
+    // const formatExcelDate = (excelDate) => {
+    //     if (typeof excelDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(excelDate)) {
+    //         return excelDate;
+    //     }
 
-        try {
-            const jsDate = new Date((excelDate - 25569) * 86400 * 1000);
-            if (isNaN(jsDate.getTime())) {
-                throw new Error("Invalid date conversion");
-            }
-            return jsDate.toISOString().split('T')[0];
-        } catch (error) {
-            console.error("Error formatting Excel date:", error);
-            return "Invalid Date";
-        }
-    };
+    //     try {
+    //         const jsDate = new Date((excelDate - 25569) * 86400 * 1000);
+    //         if (isNaN(jsDate.getTime())) {
+    //             throw new Error("Invalid date conversion");
+    //         }
+    //         return jsDate.toISOString().split('T')[0];
+    //     } catch (error) {
+    //         console.error("Error formatting Excel date:", error);
+    //         return "Invalid Date";
+    //     }
+    // };
 
 
     const processDataForGrouping = useCallback((jsonData) => {
