@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
-import * as XLSX from "xlsx";
+import React, { useState } from "react";
 import {
     Snackbar,
     Alert,
@@ -39,14 +38,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontWeight: 'bold',
     padding: '8px 16px',
     borderRight: '1px solid white',
-}));
-
-const GroupCell = styled(TableCell)(({ theme }) => ({
-    backgroundColor: '#e3f2fd',
-    fontWeight: 'bold',
-    padding: '8px 16px',
-    borderBottom: '1px solid #bbdefb',
-    borderRight: '1px solid #e0e0e0'
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
@@ -143,7 +134,6 @@ const Inspection = () => {
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [scannerOpen, setscannerOpen] = useState(false);
     const [currentUsnKey, setCurrentUsnKey] = useState(null);
-    const [stageFilter, setStageFilter] = useState("All");
 
 
     const videoConstraints = {
