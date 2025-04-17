@@ -136,7 +136,7 @@ const LoginPage = () => {
     };
 
     const handleLogin = () => {
-        navigate("/defects")
+        navigate("/InspectionReport")
     }
 
     return (

@@ -1,12 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
-// import DefectTrackingTable from "./components/Table";
-import DefectTrackingTable from "./components/Table_final";
+import Inspection from "./pages/Inspection";
+import InspectionReport from "./pages/InspectionReport";
+import Home from "./pages/Home";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route
           path="/login"
@@ -15,14 +18,26 @@ const App = () => {
           }
         />
         <Route
-          path="/defects"
+          path="/start_inspection"
           element={
-            <DefectTrackingTable />
+            <Inspection />
+          }
+        />
+        <Route
+          path="/InspectionReport"
+          element={
+            <InspectionReport />
+          }
+        />
+        <Route
+          path="/QIT-Dashboard"
+          element={
+            <Home />
           }
         />
         <Route
           path="*"
-          element={<LoginPage/>}
+          element={<LoginPage />}
         />
       </Routes>
     </Router>

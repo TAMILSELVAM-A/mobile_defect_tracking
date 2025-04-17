@@ -439,7 +439,6 @@ const TableTracking2 = () => {
         });
     }
 
-
     const getTodayDate = () => {
         const today = new Date();
 
@@ -653,13 +652,13 @@ const TableTracking2 = () => {
                                     <StyledTableCell>Spec</StyledTableCell>
                                     <StyledTableCell>Defect Pic</StyledTableCell>
                                     <StyledTableCell>Actual</StyledTableCell>
-                                    <StyledTableCell>Status</StyledTableCell>
+                                    <StyledTableCell>Result</StyledTableCell>
                                     <StyledTableCell>Containment Action</StyledTableCell>
                                     <StyledTableCell>Root Cause</StyledTableCell>
                                     <StyledTableCell>Correct to action</StyledTableCell>
-                                    <StyledTableCell>4M</StyledTableCell>
+                                    <StyledTableCell sx={{ width: 200 }}>4M</StyledTableCell>
                                     <StyledTableCell>ETC</StyledTableCell>
-                                    <StyledTableCell>Result</StyledTableCell>
+                                    <StyledTableCell>Status</StyledTableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -874,7 +873,7 @@ const TableTracking2 = () => {
                                                     <StyledTableCell>Correct to action</StyledTableCell>
                                                     <StyledTableCell>4M</StyledTableCell>
                                                     <StyledTableCell>ETC</StyledTableCell>
-                                                    <StyledTableCell>Result</StyledTableCell>
+                                                    <StyledTableCell>Status</StyledTableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
@@ -1086,21 +1085,24 @@ const TableTracking2 = () => {
                                                                 />
                                                             }
                                                         </TableCell>
-                                                        <TableCell>
-                                                            {usnValue.autousn === usnValue.manualUsn &&
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="4M"
+                                                        <TableCell sx={{ minWidth: "120px" }}>
+                                                            {usnValue.autousn === usnValue.manualUsn && (
+                                                                <select
                                                                     value={usnValue?.four_m || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "four_m", e.target.value)}
                                                                     style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
-                                                                />
-                                                            }
+                                                                >
+                                                                    <option value="">Select 4M</option>
+                                                                    {["Man", "Material", "Method", "Machine"].map((symptom) => (
+                                                                        <option key={symptom} value={symptom}>{symptom}</option>
+                                                                    ))}
+                                                                </select>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell>
                                                             {usnValue.autousn === usnValue.manualUsn &&
                                                                 <input
-                                                                    type="text"
+                                                                    type="date"
                                                                     placeholder="ETC"
                                                                     value={usnValue?.ETC || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "ETC", e.target.value)}
@@ -1173,7 +1175,7 @@ const TableTracking2 = () => {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleScanDialogClose} color="error" variant="contained">Close</Button>
-                        <Button onClick={handleAnalyze} color="primary" variant="contained">Analyze</Button>
+                        <Button onClick={handleAnalyze} color="primary" variant="contained">Scan</Button>
                     </DialogActions>
                 </Dialog>
 
