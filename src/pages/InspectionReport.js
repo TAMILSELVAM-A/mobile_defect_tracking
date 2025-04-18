@@ -17,9 +17,14 @@ import {
     Select,
     MenuItem,
     Button,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@mui/material";
 import axios from "axios";
-import { Home } from "@mui/icons-material";
+import { Delete, Home, Edit, Save, Cancel } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -49,7 +54,89 @@ const InspectionReport = () => {
     const [groupedData, setGroupedData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stageFilter, setStageFilter] = useState("All");
+    const [deleteDialog, setdeleteDialog] = useState(false);
+    const [deleteLoading, setdeleteLoading] = useState(false);
+    const [deleteItemId, setdeleteItemId] = useState(null);
+    const [isedit, setIsEdit] = useState(null);
+    const [editedItem, setEditedItem] = useState({});
+
+    console.log("editedItem", editedItem)
     const navigate = useNavigate();
+
+    const handleDeleteDialogOpen = (id) => {
+        setdeleteDialog(true);
+        setdeleteItemId(Number(id));
+    }
+
+    const handledeleteDialogClose = () => {
+        setdeleteDialog(false);
+        setdeleteItemId(null);
+    }
+
+
+    const handledeleteItem = async () => {
+        if (!deleteItemId) return;
+        try {
+            setdeleteLoading(true);
+            const itemId = Number(deleteItemId) - 1;
+            const response = await axios.delete(
+                `https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa/${itemId}`,
+            );
+            if (response.data) {
+                handledeleteDialogClose();
+                fetchExcelFile();
+            }
+        } catch (error) {
+            console.error("Error deleting item:", error);
+        } finally {
+            setdeleteLoading(false);
+        }
+    };
+
+    const handleInputChange = (field, value) => {
+        setEditedItem((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleSave = async () => {
+        try {
+            if (!editedItem) return;
+
+            const item = {
+                "Category": editedItem.category || "-",
+                "Defect Location": editedItem.defectLocation || "-",
+                "Defect Symptoms": editedItem.defectSymptoms || "-",
+                "ERR Code ": editedItem.errCode || "-",
+                Spec: editedItem.spec || "-",
+                "Defect Image": editedItem.defectPic || null,
+                Actual: editedItem.actual || "-",
+                Result: editedItem.status || "-",
+                "Containment Action ": editedItem.containtment || "-",
+                "Root cause": editedItem.root_cause || "-",
+                "Correct to action": editedItem.corect_to_cause || "-",
+                "4M": editedItem.four_m || "-",
+                ETC: editedItem.ETC || "-",
+                "Result Final": editedItem.result_final || "-",
+            };
+
+            const itemId = Number(editedItem.id) - 1;
+
+            setIsEdit(null);
+            setEditedItem({});
+
+            const response = await axios.patch(
+                `https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa/${itemId}`,
+                item
+            );
+            if (response.data) {
+                fetchExcelFile();
+            }
+        } catch (error) {
+            console.error("Error saving item:", error);
+        }
+    };
 
     const filteredData = stageFilter === "All"
         ? groupedData
@@ -109,6 +196,7 @@ const InspectionReport = () => {
             }
 
             groupedByKeys[groupKey].autoUsnGroups[autoUsn][manualUsn].push({
+                id: row["id"],
                 category: row["Category"],
                 defectSymptoms: row["Defect Symptoms"],
                 defectLocation: row["Defect Location"],
@@ -141,23 +229,23 @@ const InspectionReport = () => {
         setGroupedData(groupedArray);
     }, []);
 
-    useEffect(() => {
-        const fetchExcelFile = async () => {
-            setLoading(true);
-            try {
-                const res = await axios.get("https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa");
-                setData(res.data);
-
-                processDataForGrouping(res.data);
-            } catch (error) {
-                console.error("Error fetching or parsing Excel file:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchExcelFile();
+    const fetchExcelFile = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get("https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa");
+            setData(res.data);
+            processDataForGrouping(res.data);
+        } catch (error) {
+            console.error("Error fetching or parsing Excel file:", error);
+        } finally {
+            setLoading(false);
+        }
     }, [processDataForGrouping]);
+
+    useEffect(() => {
+        fetchExcelFile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
 
     if (loading) {
@@ -178,7 +266,7 @@ const InspectionReport = () => {
                 <Box
                     sx={{
                         mt: 1,
-                        mb:2,
+                        mb: 2,
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         alignItems: "center",
@@ -273,6 +361,7 @@ const InspectionReport = () => {
                                 <StyledTableCell sx={{ width: 200 }}>4M</StyledTableCell>
                                 <StyledTableCell>ETC</StyledTableCell>
                                 <StyledTableCell>Status</StyledTableCell>
+                                <StyledTableCell>Action</StyledTableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -323,9 +412,37 @@ const InspectionReport = () => {
                                                         {manualUsnGroup.manualUsn}
                                                     </TableCell>
                                                 )}
-                                                <TableCell>{item.category}</TableCell>
-                                                <TableCell>{item.defectLocation}</TableCell>
-                                                <TableCell>{item.defectSymptoms}</TableCell>
+                                                <TableCell>
+                                                    {isedit === item.id ?
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter Defect Location"
+                                                            value={editedItem.category || ""}
+                                                            onChange={(e) => handleInputChange("category", e.target.value)}
+                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                        /> : item.category
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    {isedit === item.id ?
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter Defect Location"
+                                                            value={editedItem.defectLocation || ""}
+                                                            onChange={(e) => handleInputChange("defectLocation", e.target.value)}
+                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                        /> :
+                                                        item.defectLocation
+                                                    }
+                                                </TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.defectSymptoms || ""}
+                                                        onChange={(e) => handleInputChange("defectSymptoms", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.defectSymptoms}</TableCell>
                                                 <TableCell>{item.limit_sample_image && (
                                                     <img
                                                         src={item.limit_sample_image}
@@ -333,8 +450,22 @@ const InspectionReport = () => {
                                                         style={{ maxHeight: '60px' }}
                                                     />
                                                 )}</TableCell>
-                                                <TableCell>{item.errCode}</TableCell>
-                                                <TableCell>{item.spec}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.errCode || ""}
+                                                        onChange={(e) => handleInputChange("errCode", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.errCode}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.spec || ""}
+                                                        onChange={(e) => handleInputChange("spec", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.spec}</TableCell>
                                                 <TableCell>
                                                     {item.defectPic ? (
                                                         <img
@@ -344,14 +475,96 @@ const InspectionReport = () => {
                                                         />
                                                     ) : ("-")}
                                                 </TableCell>
-                                                <TableCell>{item.actual}</TableCell>
-                                                <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{item.status}</TableCell>
-                                                <TableCell>{item.containtment}</TableCell>
-                                                <TableCell>{item.root_cause}</TableCell>
-                                                <TableCell>{item.corect_to_cause}</TableCell>
-                                                <TableCell>{item.four_m}</TableCell>
-                                                <TableCell>{item.ETC}</TableCell>
-                                                <TableCell>{item.result_final}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.actual || ""}
+                                                        onChange={(e) => handleInputChange("actual", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.actual}</TableCell>
+                                                <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.status || ""}
+                                                        onChange={(e) => handleInputChange("status", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.status}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.containtment || ""}
+                                                        onChange={(e) => handleInputChange("containtment", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.containtment}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.root_cause || ""}
+                                                        onChange={(e) => handleInputChange("root_cause", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.root_cause}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.corect_to_cause || ""}
+                                                        onChange={(e) => handleInputChange("corect_to_cause", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.corect_to_cause}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.four_m || ""}
+                                                        onChange={(e) => handleInputChange("four_m", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.four_m}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="date"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.ETC || ""}
+                                                        onChange={(e) => handleInputChange("ETC", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.ETC}</TableCell>
+                                                <TableCell>{isedit === item.id ?
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Defect Location"
+                                                        value={editedItem.result_final || ""}
+                                                        onChange={(e) => handleInputChange("result_final", e.target.value)}
+                                                        style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                    /> : item.result_final}</TableCell>
+                                                <TableCell>
+                                                    <Box display="flex" justifyContent={"space-between"} alignItems="center">
+                                                        {isedit === item.id ?
+                                                            <>
+                                                                <IconButton>
+                                                                    <Save color="primary" sx={{ fontSize: 18 }} onClick={handleSave} />
+                                                                </IconButton>
+                                                                <IconButton>
+                                                                    <Cancel color="error" sx={{ fontSize: 18 }} onClick={() => { setIsEdit(null); setEditedItem({}) }} />
+                                                                </IconButton>
+                                                            </> :
+                                                            <>
+                                                                <IconButton>
+                                                                    <Edit sx={{ fontSize: 18 }} color="secondary" onClick={() => { setIsEdit(item.id); setEditedItem(item) }} />
+                                                                </IconButton>
+                                                                <IconButton>
+                                                                    <Delete
+                                                                        sx={{ fontSize: 18 }}
+                                                                        color="error"
+                                                                        onClick={() => { handleDeleteDialogOpen(item.id) }}
+                                                                    />
+                                                                </IconButton>
+                                                            </>
+                                                        }
+                                                    </Box>
+                                                </TableCell>
                                             </StyledTableRow>
                                         ))
                                     ))
@@ -361,7 +574,25 @@ const InspectionReport = () => {
                     </Table>
                 </TableContainer>
             </Box>
-        </Container>
+
+            {/* DELETE DIALOG */}
+            <Dialog open={deleteDialog} onClose={handledeleteDialogClose} fullWidth>
+                <DialogTitle>Delete </DialogTitle>
+                <DialogContent>
+                    Are you sure you want to delete this item?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handledeleteDialogClose} color="primary">
+                        Cancel
+                    </Button>
+                    {deleteLoading ? (<CircularProgress />) : (
+                        <Button onClick={handledeleteItem} color="error" variant="contained" disabled={!deleteItemId}>
+                            Delete
+                        </Button>)
+                    }
+                </DialogActions>
+            </Dialog>
+        </Container >
     )
 }
 
