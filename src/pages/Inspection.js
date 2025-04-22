@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
     Snackbar,
     Alert,
@@ -139,7 +139,15 @@ const Inspection = () => {
     const [scannerOpen, setscannerOpen] = useState(false);
     const [currentUsnKey, setCurrentUsnKey] = useState(null);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const fileInputRefs = useRef({});
+
+    const handleLimitSampleIconClick = (usnKey) => {
+        const inputRef = fileInputRefs.current[usnKey];
+        if (inputRef) {
+            inputRef.click();
+        }
+    };
 
 
     const videoConstraints = {
@@ -242,10 +250,32 @@ const Inspection = () => {
         });
     };
 
-    const handleOpenScanner = (usnKey) => {
+    const handleOpenScanner = (usnKey,image) => {
         setscannerOpen(true);
         setCurrentUsnKey(usnKey);
+        setUploadedImage(image)
     };
+
+    const handleLimitSmapleImage = (event, usnKey) => {
+        console.log("usnKey", usnKey)
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const uploadedImageSrc = event.target.result;
+                setAvailableAutoUSNs((prevDetails) => {
+                    const updatedDetails = { ...prevDetails };
+                    if (!updatedDetails[usnKey]) {
+                        updatedDetails[usnKey] = {};
+                    }
+                    updatedDetails[usnKey].limit_sample_image = uploadedImageSrc;
+                    return updatedDetails;
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
 
     const handleNotAvailable = (usnKey) => {
         setAvailableAutoUSNs((prevDetails) => {
@@ -279,6 +309,16 @@ const Inspection = () => {
             const updatedDetails = { ...prevDetails };
             if (usnKey) {
                 updatedDetails[usnKey].image = null;
+            }
+            return updatedDetails;
+        });
+    }
+
+    const handleDeleteLimitSampleImage = (usnKey) => {
+        setAvailableAutoUSNs((prevDetails) => {
+            const updatedDetails = { ...prevDetails };
+            if (usnKey) {
+                updatedDetails[usnKey].limit_sample_image = null;
             }
             return updatedDetails;
         });
@@ -330,6 +370,7 @@ const Inspection = () => {
             Shift: shift,
             "Carton ID": cartonId,
             "Auto USN": usnData.autousn,
+            "Limit Sample Images": usnData.limit_sample_image,
             "Manual USN Scan": usnData.manualUsn || "-",
             "Category": usnData.category || "-",
             "Defect Location": usnData.defectLocation || "-",
@@ -384,6 +425,7 @@ const Inspection = () => {
                 spec: "",
                 actual: "",
                 image: null,
+                limit_sample_image: null,
                 result: "",
                 autousn,
                 manualUsn: manualusn,
@@ -406,14 +448,23 @@ const Inspection = () => {
         });
     };
 
+    const handleDeleteAdditionalRow = (usnkey) => {
+        setAvailableAutoUSNs((prevDetails) => {
+            const updatedDetails = { ...prevDetails };
+            if (usnkey && updatedDetails[usnkey]) {
+                delete updatedDetails[usnkey]
+            }
+            return updatedDetails;
+        })
+    }
 
     return (
         <Container maxWidth={"false"}>
-            <Box sx={{ display: "flex", alignItems: "center",justifyContent:"space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
                     Inspection
                 </Typography>
-                <Button startIcon={<Home/>} variant="contained" onClick={()=>{navigate("/home")}}>
+                <Button startIcon={<Home />} variant="contained" onClick={() => { navigate("/home") }}>
                     Home
                 </Button>
             </Box>
@@ -539,6 +590,7 @@ const Inspection = () => {
                                             <StyledTableCell>Defect Location</StyledTableCell>
                                             <StyledTableCell>Defect Symptoms</StyledTableCell>
                                             <StyledTableCell>ERR Code</StyledTableCell>
+                                            <StyledTableCell>Limit Sample Image</StyledTableCell>
                                             <StyledTableCell>Spec</StyledTableCell>
                                             <StyledTableCell>Actual</StyledTableCell>
                                             <StyledTableCell>Defect Image</StyledTableCell>
@@ -643,6 +695,66 @@ const Inspection = () => {
                                                         usnValue?.errCode || ""
                                                     )}
                                                 </TableCell>
+                                                <TableCell align="center" style={{ position: "relative" }}>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        ref={(el) => {
+                                                            if (el) fileInputRefs.current[usnKey] = el;
+                                                        }}
+                                                        style={{ display: "none" }}
+                                                        onChange={(event) => handleLimitSmapleImage(event, usnKey)}
+                                                    />
+
+                                                    {usnValue.autousn === usnValue.manualUsn ? (
+                                                        usnValue?.limit_sample_image ? (
+                                                            <div style={{ position: "relative", display: "inline-block" }}>
+                                                                <img
+                                                                    src={usnValue?.limit_sample_image || ""}
+                                                                    alt="Defect"
+                                                                    style={{ maxHeight: "60px", display: "block" }}
+                                                                />
+                                                                <SensorOccupiedIcon
+                                                                    sx={{
+                                                                        position: "absolute",
+                                                                        top: 0,
+                                                                        right: 0,
+                                                                        fontSize: "1rem",
+                                                                        color: "purple",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                    onClick={() => handleLimitSampleIconClick(usnKey)}
+                                                                />
+                                                                <DeleteIcon
+                                                                    sx={{
+                                                                        position: "absolute",
+                                                                        top: 0,
+                                                                        left: 0,
+                                                                        fontSize: "1rem",
+                                                                        color: "red",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                    onClick={() => handleDeleteLimitSampleImage(usnKey)}
+                                                                    disabled={!usnValue?.limit_sample_image}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <SensorOccupiedIcon
+                                                                color="secondary"
+                                                                onClick={
+                                                                    usnValue?.result === "OK"
+                                                                        ? undefined
+                                                                        : () => handleLimitSampleIconClick(usnKey)
+                                                                }
+                                                                sx={{
+                                                                    cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
+                                                                    opacity: usnValue?.result === "OK" ? 0.5 : 1,
+                                                                }}
+                                                                disabled={usnValue?.result === "OK"}
+                                                            />
+                                                        )
+                                                    ) : null}
+                                                </TableCell>
                                                 <TableCell>
                                                     {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
                                                         <input
@@ -685,7 +797,7 @@ const Inspection = () => {
                                                                         color: "purple",
                                                                         cursor: "pointer",
                                                                     }}
-                                                                    onClick={() => handleOpenScanner(usnKey)}
+                                                                    onClick={() => handleOpenScanner(usnKey,usnValue.image)}
                                                                 />
                                                                 <DeleteIcon
                                                                     sx={{
@@ -811,6 +923,17 @@ const Inspection = () => {
                                                     </TableCell>
                                                 )
                                                 }
+                                                {
+                                                    usnValue.additionalDefectRow && (
+                                                        <TableCell>
+                                                            <DeleteIcon
+                                                                color="error"
+                                                                sx={{ cursor: "pointer" }}
+                                                                onClick={() => handleDeleteAdditionalRow(usnKey)}
+                                                            />
+                                                        </TableCell>
+                                                    )
+                                                }
                                             </StyledTableRow>
                                         ))}
                                     </TableBody>
@@ -857,7 +980,7 @@ const Inspection = () => {
             </Dialog>
 
             {/* SCANNER DIALOG */}
-            <Dialog open={scannerOpen} onClose={() => setscannerOpen(false)} maxWidth="xs" fullWidth>
+            <Dialog open={scannerOpen} onClose={() => {setscannerOpen(false);setUploadedImage(null)}} maxWidth="xs" fullWidth>
                 <DialogTitle>Scanner</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -878,7 +1001,7 @@ const Inspection = () => {
                                     <FlipCameraAndroidIcon
                                         onClick={() => {
                                             setIsFrontCamera((prev) => !prev);
-                                            setUploadedImage(null);
+                                            // setUploadedImage(null);
                                         }}
                                         sx={{
                                             position: 'absolute',
@@ -920,7 +1043,8 @@ const Inspection = () => {
                                                 updatedDetails[currentUsnKey].image = imageSrc;
                                                 return updatedDetails;
                                             });
-                                            setIsCameraActive(false); // Deactivate the camera after capturing
+                                            setIsCameraActive(false);
+                                            setCurrentUsnKey(null) // Deactivate the camera after capturing
                                             setscannerOpen(false); // Close the dialog
                                         }
                                     }}
@@ -954,7 +1078,8 @@ const Inspection = () => {
                                                         updatedDetails[currentUsnKey].image = uploadedImageSrc;
                                                         return updatedDetails;
                                                     });
-                                                    setscannerOpen(false); // Close the dialog
+                                                    setscannerOpen(false);
+                                                    setCurrentUsnKey(null) // Close the dialog
                                                 };
                                                 reader.readAsDataURL(file);
                                             }
@@ -979,7 +1104,7 @@ const Inspection = () => {
                         onClick={() => {
                             setscannerOpen(false);
                             setIsCameraActive(false);
-                            setUploadedImage(null);
+                            // setUploadedImage(null);
                         }}
                         color="error"
                         variant="contained"
