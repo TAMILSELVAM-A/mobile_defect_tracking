@@ -113,6 +113,7 @@ const InspectionReport = () => {
                 "Defect Image": editedItem.defectPic || null,
                 Actual: editedItem.actual || "-",
                 Result: editedItem.status || "-",
+                "Pass/Fail": editedItem.pass_fail || "",
                 "Containment Action ": editedItem.containtment || "-",
                 "Root cause": editedItem.root_cause || "-",
                 "Correct to action": editedItem.corect_to_cause || "-",
@@ -211,7 +212,8 @@ const InspectionReport = () => {
                 four_m: row["4M"],
                 ETC: row["ETC"],
                 result_final: row["Result Final"],
-                limit_sample_image: row["Limit Sample Images"]
+                limit_sample_image: row["Limit Sample Images"],
+                pass_fail: row['Pass/Fail']
             });
         });
 
@@ -346,6 +348,8 @@ const InspectionReport = () => {
                                 <StyledTableCell>Carton ID</StyledTableCell>
                                 <StyledTableCell>Auto USN</StyledTableCell>
                                 <StyledTableCell>Manual USN</StyledTableCell>
+                                <StyledTableCell>Result</StyledTableCell>
+                                <StyledTableCell>Pass/Fail</StyledTableCell>
                                 <StyledTableCell>Category</StyledTableCell>
                                 <StyledTableCell>Defect Location</StyledTableCell>
                                 <StyledTableCell>Defect Symptoms</StyledTableCell>
@@ -354,7 +358,6 @@ const InspectionReport = () => {
                                 <StyledTableCell>Spec</StyledTableCell>
                                 <StyledTableCell>Defect Pic</StyledTableCell>
                                 <StyledTableCell>Actual</StyledTableCell>
-                                <StyledTableCell>Result</StyledTableCell>
                                 <StyledTableCell>Containment Action</StyledTableCell>
                                 <StyledTableCell>Root Cause</StyledTableCell>
                                 <StyledTableCell>Correct to action</StyledTableCell>
@@ -412,6 +415,17 @@ const InspectionReport = () => {
                                                         {manualUsnGroup.manualUsn}
                                                     </TableCell>
                                                 )}
+                                                <TableCell>
+                                                    {isedit === item.id ?
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Enter Defect Location"
+                                                            value={editedItem.pass_fail || ""}
+                                                            onChange={(e) => handleInputChange("pass_fail", e.target.value)}
+                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
+                                                        /> : item.pass_fail
+                                                    }
+                                                </TableCell>
                                                 <TableCell>
                                                     {isedit === item.id ?
                                                         <input

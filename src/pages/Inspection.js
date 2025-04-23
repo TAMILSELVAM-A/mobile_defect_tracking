@@ -24,7 +24,8 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    CircularProgress
+    CircularProgress,
+    IconButton
 } from "@mui/material";
 import Webcam from "react-webcam";
 import SensorOccupiedIcon from '@mui/icons-material/SensorOccupied';
@@ -205,6 +206,33 @@ const Inspection = () => {
             }
             updatedDetails[usnKey][field] = value;
 
+            if (field === "pass_fail") {
+                if (value === "pass") {
+                    updatedDetails[usnKey][field] = value;
+                }
+                else if (value === "fail") {
+                    updatedDetails[usnKey] = {
+                        ...updatedDetails[usnKey],
+                        defectLocation: "",
+                        defectSymptoms: "",
+                        category: "-",
+                        errCode: "-",
+                        spec: "-",
+                        actual: "-",
+                        image: null,
+                        result: "",
+                        containtment: "-",
+                        root_cause: "-",
+                        corect_to_cause: "-",
+                        four_m: "-",
+                        ETC: "-",
+                        result_final: "-",
+                        limit_sample_image: null,
+                        pass_fail: "fail",
+                    };
+                }
+            }
+
             if (field === "defectLocation" || field === "defectSymptoms") {
                 const { defectLocation, defectSymptoms } = updatedDetails[usnKey];
                 if (defectLocation !== "Other" && defectSymptoms !== "Other" && defectLocation && defectSymptoms) {
@@ -250,7 +278,7 @@ const Inspection = () => {
         });
     };
 
-    const handleOpenScanner = (usnKey,image) => {
+    const handleOpenScanner = (usnKey, image) => {
         setscannerOpen(true);
         setCurrentUsnKey(usnKey);
         setUploadedImage(image)
@@ -299,6 +327,7 @@ const Inspection = () => {
                     four_m: "-",
                     ETC: "-",
                     result_final: "-",
+                    pass_fail: ""
                 };
             }
             return updatedDetails;
@@ -385,6 +414,7 @@ const Inspection = () => {
             "Correct to action": usnData.corect_to_cause || "-",
             "4M": usnData.four_m || "-",
             ETC: usnData.ETC || "-",
+            "Pass/Fail": usnData.pass_fail || "-",
             "Result Final": usnData.result_final || "-",
         }));
 
@@ -435,6 +465,7 @@ const Inspection = () => {
                 four_m: "",
                 ETC: "",
                 result_final: "",
+                pass_fail: "pass",
                 additionalDefectRow: true,
             };
 
@@ -586,6 +617,8 @@ const Inspection = () => {
                                         <TableRow>
                                             <StyledTableCell>Auto USN</StyledTableCell>
                                             <StyledTableCell>Manual USN</StyledTableCell>
+                                            <StyledTableCell>Result</StyledTableCell>
+                                            <StyledTableCell>Pass/Fail</StyledTableCell>
                                             <StyledTableCell>Category</StyledTableCell>
                                             <StyledTableCell>Defect Location</StyledTableCell>
                                             <StyledTableCell>Defect Symptoms</StyledTableCell>
@@ -594,7 +627,6 @@ const Inspection = () => {
                                             <StyledTableCell>Spec</StyledTableCell>
                                             <StyledTableCell>Actual</StyledTableCell>
                                             <StyledTableCell>Defect Image</StyledTableCell>
-                                            <StyledTableCell>Result</StyledTableCell>
                                             <StyledTableCell>Containment Action</StyledTableCell>
                                             <StyledTableCell>Root Cause</StyledTableCell>
                                             <StyledTableCell>Correct to action</StyledTableCell>
@@ -618,10 +650,40 @@ const Inspection = () => {
                                                         )
                                                     }
                                                 </TableCell>
+                                                <TableCell align="center">
+                                                    {usnValue?.result &&
+                                                        <select
+                                                            value={usnValue?.result || ""}
+                                                            onChange={(e) => handleDefectChange(usnKey, "result", e.target.value)}
+                                                            disabled={usnValue?.pass_fail === "fail"}
+                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", color: usnValue?.result === "OK" ? "green" : usnValue?.result === "NG" ? "red" : "" }}
+                                                        >
+                                                            <option value="-">Select Defect Result</option>
+                                                            {["OK", "NG", "Observing"].map((symptom) => (
+                                                                <option key={symptom} value={symptom}>{symptom}</option>
+                                                            ))}
+                                                        </select>
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    {usnValue.autousn === usnValue.manualUsn && (
+                                                        <select
+                                                            value={usnValue?.pass_fail || ""}
+                                                            onChange={(e) => handleDefectChange(usnKey, "pass_fail", e.target.value)}
+                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                        >
+                                                            <option value="">Select Pass/Fail</option>
+                                                            {["pass", "fail"].map((symptom) => (
+                                                                <option key={symptom} value={symptom}>{symptom}</option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell>
                                                     {usnValue.autousn === usnValue.manualUsn && (
                                                         <select
                                                             value={usnValue?.category || ""}
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             onChange={(e) => handleDefectChange(usnKey, "category", e.target.value)}
                                                             style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                         >
@@ -637,6 +699,7 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.defectLocation || ""}
+                                                                disabled={usnValue?.pass_fail === "fail"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "defectLocation", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
@@ -648,6 +711,7 @@ const Inspection = () => {
                                                             {usnValue?.defectLocation === "Other" && (
                                                                 <input
                                                                     type="text"
+                                                                    disabled={usnValue?.pass_fail === "fail"}
                                                                     placeholder="Enter Defect Location"
                                                                     value={usnValue?.customLocation || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "customLocation", e.target.value)}
@@ -662,6 +726,7 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.defectSymptoms || ""}
+                                                                disabled={usnValue?.pass_fail === "fail"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "defectSymptoms", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
@@ -673,6 +738,7 @@ const Inspection = () => {
                                                             {usnValue?.defectSymptoms === "Other" && (
                                                                 <input
                                                                     type="text"
+                                                                    disabled={usnValue?.pass_fail === "fail"}
                                                                     placeholder="Enter Defect Symptoms"
                                                                     value={usnValue?.customSymptoms || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "customSymptoms", e.target.value)}
@@ -686,6 +752,7 @@ const Inspection = () => {
                                                     {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Enter ERR Code"
                                                             value={usnValue?.errCode || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "errCode", e.target.value)}
@@ -698,6 +765,7 @@ const Inspection = () => {
                                                 <TableCell align="center" style={{ position: "relative" }}>
                                                     <input
                                                         type="file"
+                                                        disabled={usnValue?.pass_fail === "fail"}
                                                         accept="image/*"
                                                         ref={(el) => {
                                                             if (el) fileInputRefs.current[usnKey] = el;
@@ -715,6 +783,7 @@ const Inspection = () => {
                                                                     style={{ maxHeight: "60px", display: "block" }}
                                                                 />
                                                                 <SensorOccupiedIcon
+                                                                    disabled={usnValue?.pass_fail === "fail"}
                                                                     sx={{
                                                                         position: "absolute",
                                                                         top: 0,
@@ -739,7 +808,7 @@ const Inspection = () => {
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <SensorOccupiedIcon
+                                                            <IconButton
                                                                 color="secondary"
                                                                 onClick={
                                                                     usnValue?.result === "OK"
@@ -750,8 +819,10 @@ const Inspection = () => {
                                                                     cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
                                                                     opacity: usnValue?.result === "OK" ? 0.5 : 1,
                                                                 }}
-                                                                disabled={usnValue?.result === "OK"}
-                                                            />
+                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "fail"}
+                                                            >
+                                                                <SensorOccupiedIcon />
+                                                            </IconButton>
                                                         )
                                                     ) : null}
                                                 </TableCell>
@@ -759,6 +830,7 @@ const Inspection = () => {
                                                     {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Enter Spec"
                                                             value={usnValue?.spec || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "spec", e.target.value)}
@@ -772,6 +844,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Enter Actual"
                                                             value={usnValue?.actual || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "actual", e.target.value)}
@@ -789,6 +862,7 @@ const Inspection = () => {
                                                                     style={{ maxHeight: "60px", display: "block" }}
                                                                 />
                                                                 <SensorOccupiedIcon
+                                                                    disabled={usnValue?.pass_fail === "fail"}
                                                                     sx={{
                                                                         position: "absolute",
                                                                         top: 0,
@@ -797,7 +871,7 @@ const Inspection = () => {
                                                                         color: "purple",
                                                                         cursor: "pointer",
                                                                     }}
-                                                                    onClick={() => handleOpenScanner(usnKey,usnValue.image)}
+                                                                    onClick={() => handleOpenScanner(usnKey, usnValue.image)}
                                                                 />
                                                                 <DeleteIcon
                                                                     sx={{
@@ -813,36 +887,26 @@ const Inspection = () => {
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <SensorOccupiedIcon
+                                                            <IconButton
                                                                 color="secondary"
-                                                                onClick={usnValue?.result === "OK" ? undefined : () => handleOpenScanner(usnKey)}
+                                                                onClick={usnValue?.result === "OK" || usnValue?.pass_fail === "fail" ? undefined : () => handleOpenScanner(usnKey)}
+                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "fail"}
                                                                 sx={{
-                                                                    cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
-                                                                    opacity: usnValue?.result === "OK" ? 0.5 : 1
+                                                                    cursor: usnValue?.result === "OK" || usnValue?.pass_fail === "fail" ? "not-allowed" : "pointer",
+                                                                    opacity: usnValue?.result === "OK" || usnValue?.pass_fail === "fail" ? 0.5 : 1
                                                                 }}
-                                                                disabled={usnValue?.result === "OK"}
-                                                            />
+                                                            >
+                                                                <SensorOccupiedIcon />
+                                                            </IconButton>
+
                                                         )
                                                     ) : null}
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    {usnValue?.result &&
-                                                        <select
-                                                            value={usnValue?.result || ""}
-                                                            onChange={(e) => handleDefectChange(usnKey, "result", e.target.value)}
-                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", color: usnValue?.result === "OK" ? "green" : usnValue?.result === "NG" ? "red" : "" }}
-                                                        >
-                                                            <option value="-">Select Defect Result</option>
-                                                            {["OK", "NG", "Observing"].map((symptom) => (
-                                                                <option key={symptom} value={symptom}>{symptom}</option>
-                                                            ))}
-                                                        </select>
-                                                    }
                                                 </TableCell>
                                                 <TableCell>
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Containment Action"
                                                             value={usnValue?.containtment || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "containtment", e.target.value)}
@@ -854,6 +918,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Root Cause"
                                                             value={usnValue?.root_cause || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "root_cause", e.target.value)}
@@ -865,6 +930,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="Correct to action"
                                                             value={usnValue?.corect_to_cause || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "corect_to_cause", e.target.value)}
@@ -876,6 +942,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn && (
                                                         <select
                                                             value={usnValue?.four_m || ""}
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             onChange={(e) => handleDefectChange(usnKey, "four_m", e.target.value)}
                                                             style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                         >
@@ -890,6 +957,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="date"
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             placeholder="ETC"
                                                             value={usnValue?.ETC || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "ETC", e.target.value)}
@@ -902,6 +970,7 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.result_final || ""}
+                                                                disabled={usnValue?.pass_fail === "fail"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "result_final", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
@@ -918,21 +987,20 @@ const Inspection = () => {
                                                         <PlusIcon
                                                             color="primary"
                                                             sx={{ cursor: "pointer" }}
+                                                            disabled={usnValue?.pass_fail === "fail"}
                                                             onClick={() => handleAddRowBelow(usnKey, usnValue.autousn, usnValue.manualUsn)}
                                                         />
+                                                        {
+                                                            usnValue.additionalDefectRow && (
+                                                                <DeleteIcon
+                                                                    color="error"
+                                                                    sx={{ cursor: "pointer" }}
+                                                                    onClick={() => handleDeleteAdditionalRow(usnKey)}
+                                                                />
+                                                            )
+                                                        }
                                                     </TableCell>
                                                 )
-                                                }
-                                                {
-                                                    usnValue.additionalDefectRow && (
-                                                        <TableCell>
-                                                            <DeleteIcon
-                                                                color="error"
-                                                                sx={{ cursor: "pointer" }}
-                                                                onClick={() => handleDeleteAdditionalRow(usnKey)}
-                                                            />
-                                                        </TableCell>
-                                                    )
                                                 }
                                             </StyledTableRow>
                                         ))}
@@ -980,7 +1048,7 @@ const Inspection = () => {
             </Dialog>
 
             {/* SCANNER DIALOG */}
-            <Dialog open={scannerOpen} onClose={() => {setscannerOpen(false);setUploadedImage(null)}} maxWidth="xs" fullWidth>
+            <Dialog open={scannerOpen} onClose={() => { setscannerOpen(false); setUploadedImage(null) }} maxWidth="xs" fullWidth>
                 <DialogTitle>Scanner</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 2 }}>
