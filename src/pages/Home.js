@@ -6,7 +6,6 @@ const HomePage = () => {
     const navigate = useNavigate();
     return (
         <Grid container spacing={2} sx={{ padding: 2, mt: 2 }} display="flex" alignItems="center" justifyContent="center">
-
             <Grid item size={{ xs: 12, sm: 6 }} display="flex" alignItems="center" justifyContent="center">
                 <Card sx={{ width: "100%", padding: 3, borderRadius: 4, boxShadow: 4 }}>
                     <CardContent>
@@ -20,8 +19,8 @@ const HomePage = () => {
                                 flexDirection: "column",
                                 justifyContent: "center",
                                 alignItems: "center",
-                                gap: 3, // Space between buttons
-                                mt: 7 // Adjust vertical spacing
+                                gap: 3,
+                                mt: 7 
                             }}
                         >
                             <Button

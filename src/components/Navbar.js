@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LogoImage from "../assets/TESS.png";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -34,9 +35,10 @@ const Navbar = () => {
                 {/* Logo */}
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <img
-                        src="https://alexahire.in/wp-content/uploads/2024/09/Tata-Electronics-Walk-In-Interview.webp"
+                        src={LogoImage}
                         alt="Company Logo"
-                        style={{ height: "60px", marginRight: "10px" }}
+                        style={{ height: "60px", marginRight: "10px", cursor: "pointer" }}
+                        onClick={() => { navigate('/home') }}
                     />
                 </Box>
 

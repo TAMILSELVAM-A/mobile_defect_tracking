@@ -80,7 +80,7 @@ const InspectionReport = () => {
             setdeleteLoading(true);
             const itemId = Number(deleteItemId) - 1;
             const response = await axios.delete(
-                `https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa/${itemId}`,
+                `https://api.sheetbest.com/sheets/7b92eee8-164d-4bcf-9306-8375407ff476/${itemId}`,
             );
             if (response.data) {
                 handledeleteDialogClose();
@@ -128,7 +128,7 @@ const InspectionReport = () => {
             setEditedItem({});
 
             const response = await axios.patch(
-                `https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa/${itemId}`,
+                `https://api.sheetbest.com/sheets/7b92eee8-164d-4bcf-9306-8375407ff476/${itemId}`,
                 item
             );
             if (response.data) {
@@ -234,7 +234,7 @@ const InspectionReport = () => {
     const fetchExcelFile = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get("https://api.sheetbest.com/sheets/d265c651-cbb6-4d17-a81b-b3a50d3537aa");
+            const res = await axios.get("https://api.sheetbest.com/sheets/7b92eee8-164d-4bcf-9306-8375407ff476");
             setData(res.data);
             processDataForGrouping(res.data);
         } catch (error) {
@@ -259,7 +259,50 @@ const InspectionReport = () => {
     }
 
     if (data.length === 0) {
-        return <Typography variant="h6" align="center" sx={{ mt: 4 }}>No data found.</Typography>;
+        return (
+            <Container maxWidth={"false"}>
+                <Box
+                    sx={{
+                        mt: 2,
+                        mb: 2,
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: "center",
+                        justifyContent: { xs: "center", sm: "space-between" },
+                        gap: 2,
+                        width: "100%",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: { xs: "100%", sm: "auto" },
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Typography variant="h6" align="center" sx={{ mt: { xs: 2, sm: 0 } }}>
+                            No data found.
+                        </Typography>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            width: { xs: "100%", sm: "auto" },
+                            display: "flex",
+                            justifyContent: { xs: "center", sm: "flex-end" },
+                        }}
+                    >
+                        <Button
+                            startIcon={<Home />}
+                            variant="contained"
+                            onClick={() => navigate("/home")}
+                        >
+                            Home
+                        </Button>
+                    </Box>
+                </Box>
+            </Container>
+        )
     }
 
     return (
@@ -272,7 +315,7 @@ const InspectionReport = () => {
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         alignItems: "center",
-                        justifyContent: "space-between", // Ensures proper spacing between items
+                        justifyContent: "space-between",
                         gap: 2,
                     }}
                 >
@@ -321,7 +364,7 @@ const InspectionReport = () => {
                         sx={{
                             display: "flex",
                             justifyContent: "flex-end",
-                            order: { xs: 3, sm: 3 }, // Ensure button is last
+                            order: { xs: 3, sm: 3 },
                             width: { xs: "100%", sm: "auto" },
                         }}
                     >
@@ -336,7 +379,7 @@ const InspectionReport = () => {
                         </Button>
                     </Box>
                 </Box>
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
                     <Table size="small" aria-label="defect table">
                         <TableHead>
                             <TableRow>
@@ -348,7 +391,7 @@ const InspectionReport = () => {
                                 <StyledTableCell>Carton ID</StyledTableCell>
                                 <StyledTableCell>Auto USN</StyledTableCell>
                                 <StyledTableCell>Manual USN</StyledTableCell>
-                                <StyledTableCell>Result</StyledTableCell>
+                                {/* <StyledTableCell>Result</StyledTableCell> */}
                                 <StyledTableCell>Pass/Fail</StyledTableCell>
                                 <StyledTableCell>Category</StyledTableCell>
                                 <StyledTableCell>Defect Location</StyledTableCell>
@@ -497,14 +540,14 @@ const InspectionReport = () => {
                                                         onChange={(e) => handleInputChange("actual", e.target.value)}
                                                         style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
                                                     /> : item.actual}</TableCell>
-                                                <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{isedit === item.id ?
+                                                {/* <TableCell sx={{ color: item.status === "OK" ? "green" : "red" }}>{isedit === item.id ?
                                                     <input
                                                         type="text"
                                                         placeholder="Enter Defect Location"
                                                         value={editedItem.status || ""}
                                                         onChange={(e) => handleInputChange("status", e.target.value)}
                                                         style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", marginTop: "4px" }}
-                                                    /> : item.status}</TableCell>
+                                                    /> : item.status}</TableCell> */}
                                                 <TableCell>{isedit === item.id ?
                                                     <input
                                                         type="text"
