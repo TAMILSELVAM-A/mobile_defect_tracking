@@ -502,7 +502,7 @@ const Inspection = () => {
                 four_m: "",
                 ETC: "",
                 result_final: "",
-                pass_fail: "pass",
+                pass_fail: "fail",
                 additionalDefectRow: true,
             };
 
