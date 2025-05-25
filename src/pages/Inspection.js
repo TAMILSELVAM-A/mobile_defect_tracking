@@ -262,7 +262,7 @@ const Inspection = () => {
                         });
                     }
                     else if ((defectLocation === "Logo" && defectSymptoms === "Dimple") ||
-                        (defectLocation === "RCam" && defectSymptoms === "Barrel Scratch")) {
+                        (defectLocation === "Barrel Scratch" && defectSymptoms === "RCam")) {
                         const uploadedImageSrc = LimitSampleImage;
                         setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
