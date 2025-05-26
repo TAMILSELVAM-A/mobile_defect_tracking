@@ -60,70 +60,118 @@ const cartonToAutoUSNMap = {
     '8884620325076241': ["AS-G998U-L7MN54", 'AS-G998U-P9K7J2', 'AS-G998U-TW23K9']
 };
 
-const DefectSymptoms = ["Dent", "Camera", "Scratches", "Crack", "Dimple", "RCam", "N/A", "Other"];
-const DefectLocation = ["DL1", "DL2", "DL3", "DL4", "N/A", "Logo", "Barrel Scratch", "Other"];
-
-const DefectCombinations = {};
-
-DefectSymptoms.forEach((symptom, sIndex) => {
-    DefectLocation.forEach((location, lIndex) => {
-        const key = `${symptom}-${location}`;
-        let errCode, spec, actual;
-
-        if (symptom === "N/A" && location === "N/A") {
-            errCode = "-";
-            spec = "-";
-            actual = "-";
-        } else {
-            errCode = `${symptom.slice(0, 2).toUpperCase()}${(lIndex + 1).toString().padStart(2, '0')}`;
-            switch (symptom) {
-                case "Dent":
-                    spec = "0 mm depth";
-                    actual = "0.5 mm depth";
-                    break;
-                case "Camera":
-                    spec = "0 dead pixels";
-                    actual = "2 dead pixels";
-                    break;
-                case "Scratches":
-                    spec = "0 scratches";
-                    actual = "3 scratches";
-                    break;
-                case "Crack":
-                    spec = "0 mm length";
-                    actual = "5.2 mm length";
-                    break;
-                case "Dimple":
-                    spec = "0.25 mm length";
-                    actual = "<5 mm length";
-                    break;
-                default:
-                    spec = "";
-                    actual = "";
-            }
-        }
-
-        DefectCombinations[key] = {
-            errCode,
-            spec,
-            actual
-        };
-    });
-});
-
-function getDefectInfo(symptom, location) {
-    const key = `${symptom}-${location}`;
-
-    if (DefectCombinations[key]) {
-        return DefectCombinations[key];
+const CategoryWiseDefects = {
+    CG: {
+        locations: ["D5"],
+        symptoms: ["Bump", "Scratch"]
+    },
+    HSG: {
+        locations: ["CL6"],
+        symptoms: ["Dent"]
+    },
+    BG: {
+        locations: ["H6", "RCam"],
+        symptoms: ["Dent", "Barrel Scratch"]
+    },
+    LidBox: {
+        locations: ["Logo"],
+        symptoms: ["Dimple"]
     }
+};
 
-    return {
-        errCode: "DFXX",
-        spec: "Unknown defect",
-        actual: "Undefined combination"
-    };
-}
+const ErrorCodeRules = {
+    "CG": {
+        "D5": {
+            "Scratch": { errCode: "D5SC", spec: "< 0.01mm² x5, distance ≥ 5mm" },
+            "Bump": { errCode: "D5BU", spec: "≤10mm x5, no crossing" }
+        }
+    },
+    "HSG": {
+        "CL6": {
+            "Dent": { errCode: "CL6DE", spec: "≤0.02mm² x2 per side, distance ≥ 10mm or >0.02mm² ~ 0.10mm² x1 per side No metal exposed allowed" }
+        }
+    },
+    "BG": {
+        "H6": {
+            "Dent": { errCode: "H6DE", spec: "≤0.02mm² x3 or ≤0.08mm² x2, distance ≥ 5mm" }
+        },
+        "RCam": {
+            "Barrel Scratch": { errCode: "RCBSC", spec: "Limit sample x1" }
+        }
+    },
+    "LidBox": {
+        "Logo": {
+            "Dimple": { errCode: "LSCR01", spec: "1, No worse than limit sample. 2, W⩽0.25mm.3,Cum Length⩽5mm." }
+        }
+    }
+};
+
+
+const Categories = ["CG", "HSG", "BG", "LidBox"];
+// const DefectSymptoms = ["Dent", "Camera", "Scratches", "Crack", "Dimple", "RCam", "N/A", "Other"];
+// const DefectLocation = ["DL1", "DL2", "DL3", "DL4", "N/A", "Logo", "Barrel Scratch", "Other"];
+
+// const DefectCombinations = {};
+
+// DefectSymptoms.forEach((symptom, sIndex) => {
+//     DefectLocation.forEach((location, lIndex) => {
+//         const key = `${symptom}-${location}`;
+//         let errCode, spec, actual;
+
+//         if (symptom === "N/A" && location === "N/A") {
+//             errCode = "-";
+//             spec = "-";
+//             actual = "-";
+//         } else {
+//             errCode = `${symptom.slice(0, 2).toUpperCase()}${(lIndex + 1).toString().padStart(2, '0')}`;
+//             switch (symptom) {
+//                 case "Dent":
+//                     spec = "0 mm depth";
+//                     actual = "0.5 mm depth";
+//                     break;
+//                 case "Camera":
+//                     spec = "0 dead pixels";
+//                     actual = "2 dead pixels";
+//                     break;
+//                 case "Scratches":
+//                     spec = "0 scratches";
+//                     actual = "3 scratches";
+//                     break;
+//                 case "Crack":
+//                     spec = "0 mm length";
+//                     actual = "5.2 mm length";
+//                     break;
+//                 case "Dimple":
+//                     spec = "0.25 mm length";
+//                     actual = "<5 mm length";
+//                     break;
+//                 default:
+//                     spec = "";
+//                     actual = "";
+//             }
+//         }
+
+//         DefectCombinations[key] = {
+//             errCode,
+//             spec,
+//             actual
+//         };
+//     });
+// });
+
+// function getDefectInfo(symptom, location) {
+//     const key = `${symptom}-${location}`;
+
+//     if (DefectCombinations[key]) {
+//         return DefectCombinations[key];
+//     }
+
+//     return {
+//         errCode: "DFXX",
+//         spec: "Unknown defect",
+//         actual: "Undefined combination"
+//     };
+// }
 
 const Inspection = () => {
     const [availableAutoUSNs, setAvailableAutoUSNs] = useState([]);
@@ -136,7 +184,7 @@ const Inspection = () => {
     });
     const [manualUsn, setManualUsn] = useState("");
     const [uploadedImage, setUploadedImage] = useState(null);
-    const [LimitSampleImagePreview,setLimitSampleImagePreview] = useState(null);
+    const [LimitSampleImagePreview, setLimitSampleImagePreview] = useState(null);
     const [scanDialogOpen, setScanDialogOpen] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -144,7 +192,7 @@ const Inspection = () => {
     const [isFrontCamera, setIsFrontCamera] = useState(true);
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [scannerOpen, setscannerOpen] = useState(false);
-    const [LimitSampleOpen,setLimitSampleOpen] = useState(false);
+    const [LimitSampleOpen, setLimitSampleOpen] = useState(false);
     const [currentUsnKey, setCurrentUsnKey] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -156,6 +204,13 @@ const Inspection = () => {
     //         inputRef.click();
     //     }
     // };
+
+    const getColor = (value) => {
+        if (value === "Pass") return "green";
+        if (value === "Fail") return "red";
+        if (value === "Observation") return "black";
+        return "#000";
+    };
 
     const videoConstraints = {
         width: 1280,
@@ -213,10 +268,10 @@ const Inspection = () => {
             updatedDetails[usnKey][field] = value;
 
             if (field === "pass_fail") {
-                if (value === "fail" || value === "observation") {
+                if (value === "Fail" || value === "Observation") {
                     updatedDetails[usnKey][field] = value;
                 }
-                else if (value === "pass") {
+                else if (value === "Pass") {
                     updatedDetails[usnKey] = {
                         ...updatedDetails[usnKey],
                         defectLocation: "",
@@ -234,35 +289,52 @@ const Inspection = () => {
                         ETC: "-",
                         result_final: "-",
                         limit_sample_image: null,
-                        pass_fail: "pass",
+                        pass_fail: "Pass",
                     };
                 }
             }
 
             if (field === "defectLocation" || field === "defectSymptoms") {
-                const { defectLocation, defectSymptoms } = updatedDetails[usnKey];
-                if (defectLocation !== "Other" && defectSymptoms !== "Other" && defectLocation && defectSymptoms) {
-                    const defectInfo = getDefectInfo(defectSymptoms, defectLocation);
-                    updatedDetails[usnKey] = {
-                        ...updatedDetails[usnKey],
-                        errCode: defectInfo.errCode,
-                        spec: defectInfo.spec
-                    };
-                }
+                const { defectLocation, defectSymptoms, category } = updatedDetails[usnKey];
+                // if (defectLocation !== "Other" && defectSymptoms !== "Other" && defectLocation && defectSymptoms) {
+                //     const defectInfo = ErrorCodeRules?.[category]?.[defectLocation]?.[defectSymptoms] || "";
+                //     updatedDetails[usnKey] = {
+                //         ...updatedDetails[usnKey],
+                //         errCode: defectInfo.errCode,
+                //         spec: defectInfo.spec
+                //     };
+                // }
                 if (defectLocation && defectSymptoms) {
-                    if (defectLocation === "N/A" && defectSymptoms === "N/A") {
-                        updatedDetails[usnKey].result = "OK";
-                         setAvailableAutoUSNs((prevDetails) => {
+                    console.log(category, defectLocation, defectSymptoms);
+                    const match = ErrorCodeRules?.[category]?.[defectLocation]?.[defectSymptoms];
+                    console.log(match, "match")
+                    if (match) {
+                        setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
                             if (!updatedDetails[usnKey]) {
                                 updatedDetails[usnKey] = {};
                             }
-                            updatedDetails[usnKey].limit_sample_image = null;
+                            updatedDetails[usnKey] = {
+                                ...updatedDetails[usnKey],
+                                errCode: match.errCode,
+                                spec: match.spec,
+                            };
                             return updatedDetails;
                         });
                     }
-                    else if ((defectLocation === "Logo" && defectSymptoms === "Dimple") ||
-                        (defectLocation === "Barrel Scratch" && defectSymptoms === "RCam")) {
+                    // if (defectLocation === "N/A" && defectSymptoms === "N/A") {
+                    //     updatedDetails[usnKey].result = "OK";
+                    //     setAvailableAutoUSNs((prevDetails) => {
+                    //         const updatedDetails = { ...prevDetails };
+                    //         if (!updatedDetails[usnKey]) {
+                    //             updatedDetails[usnKey] = {};
+                    //         }
+                    //         updatedDetails[usnKey].limit_sample_image = null;
+                    //         return updatedDetails;
+                    //     });
+                    // }
+                    if ((defectLocation === "Logo" && defectSymptoms === "Dimple") ||
+                        (defectLocation === "RCam" && defectSymptoms === "Barrel Scratch")) {
                         const uploadedImageSrc = LimitSampleImage;
                         setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
@@ -275,7 +347,7 @@ const Inspection = () => {
                     }
                     else {
                         updatedDetails[usnKey].result = "NG";
-                         setAvailableAutoUSNs((prevDetails) => {
+                        setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
                             if (!updatedDetails[usnKey]) {
                                 updatedDetails[usnKey] = {};
@@ -319,7 +391,7 @@ const Inspection = () => {
         setUploadedImage(image)
     };
 
-    const handleLimitSmapleImage = (usnKey,image) => {
+    const handleLimitSmapleImage = (usnKey, image) => {
         setCurrentUsnKey(usnKey);
         setLimitSampleOpen(true);
         setLimitSampleImagePreview(image);
@@ -502,7 +574,7 @@ const Inspection = () => {
                 four_m: "",
                 ETC: "",
                 result_final: "",
-                pass_fail: "fail",
+                pass_fail: "Pass",
                 additionalDefectRow: true,
             };
 
@@ -692,7 +764,7 @@ const Inspection = () => {
                                                         <select
                                                             value={usnValue?.result || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "result", e.target.value)}
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px", color: usnValue?.result === "OK" ? "green" : usnValue?.result === "NG" ? "red" : "" }}
                                                         >
                                                             <option value="-">Select Defect Result</option>
@@ -705,27 +777,42 @@ const Inspection = () => {
                                                 <TableCell>
                                                     {usnValue.autousn === usnValue.manualUsn && (
                                                         <select
-                                                            value={usnValue?.pass_fail || ""}
+                                                            value={usnValue?.pass_fail || "Pass"}
                                                             onChange={(e) => handleDefectChange(usnKey, "pass_fail", e.target.value)}
-                                                            style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
+                                                            style={{
+                                                                width: '100%',
+                                                                border: "1px solid #64b5f6",
+                                                                padding: "2px",
+                                                                borderRadius: "4px",
+                                                                color: getColor(usnValue?.pass_fail || "Pass")
+                                                            }}
                                                         >
                                                             <option value="">Select Pass/Fail</option>
-                                                            {["pass", "fail", "observation"].map((symptom) => (
-                                                                <option key={symptom} value={symptom}>{symptom}</option>
-                                                            ))}
+                                                            {["Pass", "Fail", "Observation"].map((symptom) => {
+                                                                let color = "";
+                                                                if (symptom === "Pass") color = "green";
+                                                                else if (symptom === "Fail") color = "red";
+                                                                else color = "black";
+                                                                return (
+                                                                    <option key={symptom} value={symptom} style={{ color }}>
+                                                                        {symptom}
+                                                                    </option>
+                                                                );
+                                                            })}
                                                         </select>
+
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
                                                     {usnValue.autousn === usnValue.manualUsn && (
                                                         <select
                                                             value={usnValue?.category || ""}
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             onChange={(e) => handleDefectChange(usnKey, "category", e.target.value)}
                                                             style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                         >
                                                             <option value="">Select Category</option>
-                                                            {["Category 1", "Category 2", "Category 3"].map((symptom) => (
+                                                            {Categories.map((symptom) => (
                                                                 <option key={symptom} value={symptom}>{symptom}</option>
                                                             ))}
                                                         </select>
@@ -736,19 +823,19 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.defectLocation || ""}
-                                                                disabled={usnValue?.pass_fail === "pass"}
+                                                                disabled={usnValue?.pass_fail === "Pass"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "defectLocation", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
                                                                 <option value="">Select Defect Location</option>
-                                                                {DefectLocation.map((location) => (
+                                                                {(CategoryWiseDefects[usnValue.category]?.locations || []).map((location) => (
                                                                     <option key={location} value={location}>{location}</option>
                                                                 ))}
                                                             </select>
                                                             {usnValue?.defectLocation === "Other" && (
                                                                 <input
                                                                     type="text"
-                                                                    disabled={usnValue?.pass_fail === "pass"}
+                                                                    disabled={usnValue?.pass_fail === "Pass"}
                                                                     placeholder="Enter Defect Location"
                                                                     value={usnValue?.customLocation || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "customLocation", e.target.value)}
@@ -763,19 +850,19 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.defectSymptoms || ""}
-                                                                disabled={usnValue?.pass_fail === "pass"}
+                                                                disabled={usnValue?.pass_fail === "Pass"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "defectSymptoms", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
                                                                 <option value="">Select Defect Symptoms</option>
-                                                                {DefectSymptoms.map((symptom) => (
+                                                                {(CategoryWiseDefects[usnValue.category]?.symptoms || []).map((symptom) => (
                                                                     <option key={symptom} value={symptom}>{symptom}</option>
                                                                 ))}
                                                             </select>
                                                             {usnValue?.defectSymptoms === "Other" && (
                                                                 <input
                                                                     type="text"
-                                                                    disabled={usnValue?.pass_fail === "pass"}
+                                                                    disabled={usnValue?.pass_fail === "Pass"}
                                                                     placeholder="Enter Defect Symptoms"
                                                                     value={usnValue?.customSymptoms || ""}
                                                                     onChange={(e) => handleDefectChange(usnKey, "customSymptoms", e.target.value)}
@@ -789,7 +876,7 @@ const Inspection = () => {
                                                     {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Enter ERR Code"
                                                             value={usnValue?.errCode || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "errCode", e.target.value)}
@@ -802,7 +889,7 @@ const Inspection = () => {
                                                 <TableCell align="center" style={{ position: "relative" }}>
                                                     {/* <input
                                                         type="file"
-                                                        disabled={usnValue?.pass_fail === "pass"}
+                                                        disabled={usnValue?.pass_fail === "Pass"}
                                                         accept="image/*"
                                                         ref={(el) => {
                                                             if (el) fileInputRefs.current[usnKey] = el;
@@ -820,7 +907,7 @@ const Inspection = () => {
                                                                     style={{ maxHeight: "60px", display: "block" }}
                                                                 />
                                                                 <SensorOccupiedIcon
-                                                                    disabled={usnValue?.pass_fail === "pass"}
+                                                                    disabled={usnValue?.pass_fail === "Pass"}
                                                                     sx={{
                                                                         position: "absolute",
                                                                         top: 0,
@@ -829,7 +916,7 @@ const Inspection = () => {
                                                                         color: "purple",
                                                                         cursor: "pointer",
                                                                     }}
-                                                                    onClick={() => handleLimitSmapleImage(usnKey,usnValue?.limit_sample_image)}
+                                                                    onClick={() => handleLimitSmapleImage(usnKey, usnValue?.limit_sample_image)}
                                                                 />
                                                                 <DeleteIcon
                                                                     sx={{
@@ -850,13 +937,13 @@ const Inspection = () => {
                                                                 onClick={
                                                                     usnValue?.result === "OK"
                                                                         ? undefined
-                                                                        : () => handleLimitSmapleImage(usnKey,usnValue?.limit_sample_image)
+                                                                        : () => handleLimitSmapleImage(usnKey, usnValue?.limit_sample_image)
                                                                 }
                                                                 sx={{
                                                                     cursor: usnValue?.result === "OK" ? "not-allowed" : "pointer",
                                                                     opacity: usnValue?.result === "OK" ? 0.5 : 1,
                                                                 }}
-                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "pass"}
+                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "Pass"}
                                                             >
                                                                 <SensorOccupiedIcon />
                                                             </IconButton>
@@ -867,7 +954,7 @@ const Inspection = () => {
                                                     {usnValue?.defectLocation === "Other" || usnValue?.defectSymptoms === "Other" ? (
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Enter Spec"
                                                             value={usnValue?.spec || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "spec", e.target.value)}
@@ -881,7 +968,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Enter Actual"
                                                             value={usnValue?.actual || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "actual", e.target.value)}
@@ -899,7 +986,7 @@ const Inspection = () => {
                                                                     style={{ maxHeight: "60px", display: "block" }}
                                                                 />
                                                                 <SensorOccupiedIcon
-                                                                    disabled={usnValue?.pass_fail === "pass"}
+                                                                    disabled={usnValue?.pass_fail === "Pass"}
                                                                     sx={{
                                                                         position: "absolute",
                                                                         top: 0,
@@ -926,11 +1013,11 @@ const Inspection = () => {
                                                         ) : (
                                                             <IconButton
                                                                 color="secondary"
-                                                                onClick={usnValue?.result === "OK" || usnValue?.pass_fail === "pass" ? undefined : () => handleOpenScanner(usnKey)}
-                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "pass"}
+                                                                onClick={usnValue?.result === "OK" || usnValue?.pass_fail === "Pass" ? undefined : () => handleOpenScanner(usnKey)}
+                                                                disabled={usnValue?.result === "OK" || usnValue?.pass_fail === "Pass"}
                                                                 sx={{
-                                                                    cursor: usnValue?.result === "OK" || usnValue?.pass_fail === "pass" ? "not-allowed" : "pointer",
-                                                                    opacity: usnValue?.result === "OK" || usnValue?.pass_fail === "pass" ? 0.5 : 1
+                                                                    cursor: usnValue?.result === "OK" || usnValue?.pass_fail === "Pass" ? "not-allowed" : "pointer",
+                                                                    opacity: usnValue?.result === "OK" || usnValue?.pass_fail === "Pass" ? 0.5 : 1
                                                                 }}
                                                             >
                                                                 <SensorOccupiedIcon />
@@ -943,7 +1030,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Containment Action"
                                                             value={usnValue?.containtment || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "containtment", e.target.value)}
@@ -955,7 +1042,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Root Cause"
                                                             value={usnValue?.root_cause || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "root_cause", e.target.value)}
@@ -967,7 +1054,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="text"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="Correct to action"
                                                             value={usnValue?.corect_to_cause || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "corect_to_cause", e.target.value)}
@@ -979,7 +1066,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn && (
                                                         <select
                                                             value={usnValue?.four_m || ""}
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             onChange={(e) => handleDefectChange(usnKey, "four_m", e.target.value)}
                                                             style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                         >
@@ -994,7 +1081,7 @@ const Inspection = () => {
                                                     {usnValue.autousn === usnValue.manualUsn &&
                                                         <input
                                                             type="date"
-                                                            disabled={usnValue?.pass_fail === "pass"}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
                                                             placeholder="ETC"
                                                             value={usnValue?.ETC || ""}
                                                             onChange={(e) => handleDefectChange(usnKey, "ETC", e.target.value)}
@@ -1007,7 +1094,7 @@ const Inspection = () => {
                                                         <>
                                                             <select
                                                                 value={usnValue?.result_final || ""}
-                                                                disabled={usnValue?.pass_fail === "pass"}
+                                                                disabled={usnValue?.pass_fail === "Pass"}
                                                                 onChange={(e) => handleDefectChange(usnKey, "result_final", e.target.value)}
                                                                 style={{ width: '100%', border: "1px solid #64b5f6", padding: "2px", borderRadius: "4px" }}
                                                             >
@@ -1023,8 +1110,8 @@ const Inspection = () => {
                                                     <TableCell>
                                                         <IconButton
                                                             color="primary"
-                                                            disabled={usnValue?.pass_fail === "pass"}
-                                                            sx={{ cursor: usnValue?.pass_fail === "pass" ? "not-allowed" : "pointer" }}
+                                                            disabled={usnValue?.pass_fail === "Pass"}
+                                                            sx={{ cursor: usnValue?.pass_fail === "Pass" ? "not-allowed" : "pointer" }}
                                                             onClick={() =>
                                                                 handleAddRowBelow(usnKey, usnValue.autousn, usnValue.manualUsn)
                                                             }
@@ -1035,8 +1122,8 @@ const Inspection = () => {
                                                         {usnValue.additionalDefectRow && (
                                                             <IconButton
                                                                 color="error"
-                                                                disabled={usnValue?.pass_fail === "pass"}
-                                                                sx={{ cursor: usnValue?.pass_fail === "pass" ? "not-allowed" : "pointer" }}
+                                                                disabled={usnValue?.pass_fail === "Pass"}
+                                                                sx={{ cursor: usnValue?.pass_fail === "Pass" ? "not-allowed" : "pointer" }}
                                                                 onClick={() => handleDeleteAdditionalRow(usnKey)}
                                                             >
                                                                 <DeleteIcon />
@@ -1300,8 +1387,8 @@ const Inspection = () => {
                 <DialogActions>
                     <Button
                         onClick={() => {
-                        setLimitSampleOpen(false)
-                        setLimitSampleOpen(null);
+                            setLimitSampleOpen(false)
+                            setLimitSampleOpen(null);
                         }}
                         color="error"
                         variant="contained"
