@@ -247,6 +247,7 @@ const Inspection = () => {
                 updatedUSNs[matchedKey] = {
                     ...updatedUSNs[matchedKey],
                     manualUsn: manualUsn,
+                    pass_fail:'Pass',
                     matched: true,
                 };
                 setManualUsn("");
