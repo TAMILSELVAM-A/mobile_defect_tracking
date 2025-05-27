@@ -62,20 +62,20 @@ const cartonToAutoUSNMap = {
 
 const CategoryWiseDefects = {
     CG: {
-        locations: ["D5"],
-        symptoms: ["Bump", "Scratch"]
+        locations: ["D5","Other"],
+        symptoms: ["Bump", "Scratch","Other"]
     },
     HSG: {
-        locations: ["CL6"],
-        symptoms: ["Dent"]
+        locations: ["CL6","Other"],
+        symptoms: ["Dent","Other"]
     },
     BG: {
-        locations: ["H6", "RCam"],
-        symptoms: ["Dent", "Barrel Scratch"]
+        locations: ["H6", "RCam","Other"],
+        symptoms: ["Dent", "Barrel Scratch","Other"]
     },
     LidBox: {
-        locations: ["Logo"],
-        symptoms: ["Dimple"]
+        locations: ["Logo","Other"],
+        symptoms: ["Dimple","Other"]
     }
 };
 
@@ -1162,7 +1162,7 @@ const Inspection = () => {
                             Object.keys(availableAutoUSNs).length === 0 ||
                             Object.values(availableAutoUSNs).some((usn) => !usn.manualUsn)
                         }>
-                        Add Record
+                        Save Record
                     </Button>
                 }
             </Box>
