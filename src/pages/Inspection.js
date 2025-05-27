@@ -321,7 +321,7 @@ const Inspection = () => {
                             return updatedDetails;
                         });
                     }
-                    if(defectLocation == "" || defectSymptoms == "") {
+                    if(defectLocation === "" || defectSymptoms === "") {
                         updatedDetails[usnKey].result = "NG";
                         setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
