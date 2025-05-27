@@ -82,8 +82,8 @@ const CategoryWiseDefects = {
 const ErrorCodeRules = {
     "CG": {
         "D5": {
-            "Scratch": { errCode: "D5SC", spec: "< 0.01mm² x5, distance ≥ 5mm" },
-            "Bump": { errCode: "D5BU", spec: "≤10mm x5, no crossing" }
+            "Scratch": { errCode: "D5SC", spec: "≤10mm x5, no crossing" },
+            "Bump": { errCode: "D5BU", spec: "< 0.01mm² x5, distance ≥ 5mm" }
         }
     },
     "HSG": {
@@ -101,7 +101,7 @@ const ErrorCodeRules = {
     },
     "LidBox": {
         "Logo": {
-            "Dimple": { errCode: "LSCR01", spec: "1, No worse than limit sample. 2, W⩽0.25mm.3,Cum Length⩽5mm." }
+            "Dimple": { errCode: "LSCR01", spec: "1, No worse than limit sample. 2, W⩽0.25mm.3, Cum Length⩽5mm." }
         }
     }
 };
@@ -247,7 +247,7 @@ const Inspection = () => {
                 updatedUSNs[matchedKey] = {
                     ...updatedUSNs[matchedKey],
                     manualUsn: manualUsn,
-                    pass_fail:'Pass',
+                    pass_fail: 'Pass',
                     matched: true,
                 };
                 setManualUsn("");
@@ -277,18 +277,18 @@ const Inspection = () => {
                         ...updatedDetails[usnKey],
                         defectLocation: "",
                         defectSymptoms: "",
-                        category: "-",
-                        errCode: "-",
-                        spec: "-",
-                        actual: "-",
+                        category: "",
+                        errCode: "",
+                        spec: "",
+                        actual: "",
                         image: null,
                         result: "",
-                        containtment: "-",
-                        root_cause: "-",
-                        corect_to_cause: "-",
-                        four_m: "-",
-                        ETC: "-",
-                        result_final: "-",
+                        containtment: "",
+                        root_cause: "",
+                        corect_to_cause: "",
+                        four_m: "",
+                        ETC: "",
+                        result_final: "",
                         limit_sample_image: null,
                         pass_fail: "Pass",
                     };
@@ -306,9 +306,7 @@ const Inspection = () => {
                 //     };
                 // }
                 if (defectLocation && defectSymptoms) {
-                    console.log(category, defectLocation, defectSymptoms);
                     const match = ErrorCodeRules?.[category]?.[defectLocation]?.[defectSymptoms];
-                    console.log(match, "match")
                     if (match) {
                         setAvailableAutoUSNs((prevDetails) => {
                             const updatedDetails = { ...prevDetails };
@@ -320,6 +318,18 @@ const Inspection = () => {
                                 errCode: match.errCode,
                                 spec: match.spec,
                             };
+                            return updatedDetails;
+                        });
+                    }
+                    if(defectLocation == "" || defectSymptoms == "") {
+                        updatedDetails[usnKey].result = "NG";
+                        setAvailableAutoUSNs((prevDetails) => {
+                            const updatedDetails = { ...prevDetails };
+                            if (!updatedDetails[usnKey]) {
+                                updatedDetails[usnKey] = {};
+                            }
+                            updatedDetails[usnKey].spec = "";
+                            updatedDetails[usnKey].errCode = "";
                             return updatedDetails;
                         });
                     }
@@ -510,22 +520,22 @@ const Inspection = () => {
             "Carton ID": cartonId,
             "Auto USN": usnData.autousn,
             "Limit Sample Images": usnData.limit_sample_image,
-            "Manual USN Scan": usnData.manualUsn || "-",
-            "Category": usnData.category || "-",
-            "Defect Location": usnData.defectLocation || "-",
-            "Defect Symptoms": usnData.defectSymptoms || "-",
-            "ERR Code ": usnData.errCode || "-",
-            Spec: usnData.spec || "-",
+            "Manual USN Scan": usnData.manualUsn || "",
+            "Category": usnData.category || "",
+            "Defect Location": usnData.defectLocation || "",
+            "Defect Symptoms": usnData.defectSymptoms || "",
+            "ERR Code ": usnData.errCode || "",
+            Spec: usnData.spec || "",
             "Defect Image": usnData.image || null,
-            Actual: usnData.actual || "-",
-            Result: usnData.result || "-",
-            "Containment Action ": usnData.containtment || "-",
-            "Root cause": usnData.root_cause || "-",
-            "Correct to action": usnData.corect_to_cause || "-",
-            "4M": usnData.four_m || "-",
-            ETC: usnData.ETC || "-",
-            "Pass/Fail": usnData.pass_fail || "-",
-            "Result Final": usnData.result_final || "-",
+            Actual: usnData.actual || "",
+            Result: usnData.result || "",
+            "Containment Action ": usnData.containtment || "",
+            "Root cause": usnData.root_cause || "",
+            "Correct to action": usnData.corect_to_cause || "",
+            "4M": usnData.four_m || "",
+            ETC: usnData.ETC || "",
+            "Pass/Fail": usnData.pass_fail || "",
+            "Result Final": usnData.result_final || "",
         }));
 
         try {
